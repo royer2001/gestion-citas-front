@@ -27,10 +27,8 @@
           <select id="filtroArea" v-model="filtros.area"
             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white">
             <option value="">Todas las áreas</option>
-            <option value="odontologia">Odontología</option>
-            <option value="psicologia">Psicología</option>
-            <option value="nutricion">Nutrición</option>
-            <option value="medicina_general">Medicina General</option>
+            <option v-for="area in areas" :key="area.id" :value="area.nombre.toLowerCase().replace(/ /g, '_')">{{
+              area.nombre }}</option>
           </select>
         </div>
 
@@ -50,7 +48,7 @@
           <label for="filtroBuscar" class="block text-sm font-medium text-gray-700 mb-2">
             Buscar
           </label>
-          <input type="text" id="filtroBuscar" v-model="filtros.busqueda" placeholder="Nombre o CMP"
+          <input type="text" id="filtroBuscar" v-model="filtros.busqueda" placeholder="Nombre o DNI"
             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" />
         </div>
       </div>
@@ -58,7 +56,13 @@
 
     <!-- Tabla de médicos -->
     <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-      <div class="overflow-x-auto">
+      <!-- Loading State -->
+      <div v-if="loading" class="p-12 text-center">
+        <ArrowPathIcon class="w-10 h-10 mx-auto text-emerald-500 animate-spin" />
+        <p class="mt-4 text-gray-500">Cargando médicos...</p>
+      </div>
+
+      <div v-else class="overflow-x-auto">
         <table class="w-full">
           <thead class="bg-gray-50 border-b border-gray-200">
             <tr>
@@ -69,13 +73,7 @@
                 Especialidad
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                CMP
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Horario
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Cupos/Día
+                DNI
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Estado
@@ -92,13 +90,13 @@
                   <div class="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center">
                     <span class="text-emerald-600 font-semibold">{{
                       medico.iniciales
-                      }}</span>
+                    }}</span>
                   </div>
                   <div class="ml-4">
                     <div class="text-sm font-medium text-gray-900">
                       {{ medico.nombre }}
                     </div>
-                    <div class="text-sm text-gray-500">{{ medico.email }}</div>
+                    <div class="text-sm text-gray-500">{{ medico.username }}</div>
                   </div>
                 </div>
               </td>
@@ -106,18 +104,9 @@
                 <div class="text-sm text-gray-900">
                   {{ formatArea(medico.area) }}
                 </div>
-                <div class="text-sm text-gray-500">
-                  {{ medico.especialidad }}
-                </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">{{ medico.cmp }}</div>
-              </td>
-              <td class="px-6 py-4">
-                <div class="text-sm text-gray-900">{{ medico.horario }}</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">{{ medico.cuposDia }}</div>
+                <div class="text-sm text-gray-900">{{ medico.dni }}</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span :class="[
@@ -136,10 +125,6 @@
                   <span class="text-xs font-medium">Procesando...</span>
                 </div>
                 <div v-else class="flex gap-2">
-                  <button @click="verDetalle(medico)" class="text-blue-600 hover:text-blue-800 transition"
-                    title="Ver detalle">
-                    <EyeIcon class="w-5 h-5" />
-                  </button>
                   <button @click="editarMedico(medico)" class="text-green-600 hover:text-green-800 transition"
                     title="Editar">
                     <PencilSquareIcon class="w-5 h-5" />
@@ -162,7 +147,7 @@
       </div>
 
       <!-- Mensaje cuando no hay resultados -->
-      <div v-if="medicosFiltrados.length === 0" class="text-center py-12">
+      <div v-if="!loading && medicosFiltrados.length === 0" class="text-center py-12">
         <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -174,7 +159,7 @@
     </div>
 
     <!-- Paginación -->
-    <div v-if="medicosFiltrados.length > 0"
+    <div v-if="!loading && medicosFiltrados.length > 0"
       class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 rounded-b-lg shadow-lg mt-[-24px] mb-8">
       <div class="flex-1 flex justify-between sm:hidden">
         <button @click="prevPage" :disabled="currentPage === 1"
@@ -235,7 +220,7 @@
 
     <!-- Modal de Crear/Editar -->
     <ModalFormMedico :visible="modalForm.visible" :es-edicion="modalForm.esEdicion" :medico-data="formData"
-      @close="cerrarModalForm" @save="guardarMedico" />
+      :areas="areas" @close="cerrarModalForm" @save="guardarMedico" />
 
     <!-- Modal de Detalle -->
     <ModalDetalleMedico :visible="modalDetalle.visible" :medico="modalDetalle.medico" @close="cerrarModalDetalle"
@@ -244,10 +229,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 import Swal from 'sweetalert2';
 import ModalFormMedico from '../components/medicos/ModalFormMedico.vue';
 import ModalDetalleMedico from '../components/medicos/ModalDetalleMedico.vue';
+import { medicoService, type Medico } from '../services/medicoService';
+import areaService, { type Area } from '../services/areaService';
 import {
   UserPlusIcon,
   EyeIcon,
@@ -259,21 +246,6 @@ import {
   ArrowPathIcon,
   FunnelIcon
 } from '@heroicons/vue/24/outline';
-
-interface Medico {
-  id: number;
-  nombre: string;
-  iniciales: string;
-  email: string;
-  telefono: string;
-  cmp: string;
-  area: string;
-  especialidad: string;
-  horario: string;
-  cuposDia: number;
-  direccion?: string;
-  estado: "activo" | "inactivo";
-}
 
 interface Filtros {
   area: string;
@@ -300,92 +272,62 @@ const modalDetalle = ref<{
   medico: null,
 });
 
-const formData = ref({
+interface FormDataLocal {
+  id: number;
+  nombre: string;
+  email: string;
+  telefono: string;
+  cmp: string;
+  dni: string;
+  area: string;
+  especialidad: string;
+  horario: string;
+  cuposDia: number;
+  direccion: string;
+  username: string;
+  password?: string;
+}
+
+const formData = ref<FormDataLocal>({
   id: 0,
   nombre: "",
   email: "",
   telefono: "",
   cmp: "",
+  dni: "",
   area: "",
   especialidad: "",
   horario: "",
   cuposDia: 10,
   direccion: "",
+  username: "",
+  password: "",
 });
 
-// Datos de ejemplo
-const medicos = ref<Medico[]>([
-  {
-    id: 1,
-    nombre: "Dr. Carlos Mendoza García",
-    iniciales: "CM",
-    email: "cmendoza@clinica.com",
-    telefono: "987 654 321",
-    cmp: "045678",
-    area: "odontologia",
-    especialidad: "Odontólogo General",
-    horario: "8:00 AM - 2:00 PM",
-    cuposDia: 12,
-    direccion: "Av. Principal 123, Lima",
-    estado: "activo",
-  },
-  {
-    id: 2,
-    nombre: "Dra. Ana Torres Silva",
-    iniciales: "AT",
-    email: "atorres@clinica.com",
-    telefono: "987 123 456",
-    cmp: "056789",
-    area: "odontologia",
-    especialidad: "Ortodoncista",
-    horario: "2:00 PM - 6:00 PM",
-    cuposDia: 8,
-    direccion: "Av. Los Olivos 456, Lima",
-    estado: "activo",
-  },
-  {
-    id: 3,
-    nombre: "Dra. María González Ruiz",
-    iniciales: "MG",
-    email: "mgonzalez@clinica.com",
-    telefono: "986 321 654",
-    cmp: "067890",
-    area: "psicologia",
-    especialidad: "Psicóloga Clínica",
-    horario: "9:00 AM - 5:00 PM",
-    cuposDia: 10,
-    direccion: "Jr. Las Flores 789, Lima",
-    estado: "activo",
-  },
-  {
-    id: 4,
-    nombre: "Dra. Laura Pérez Vega",
-    iniciales: "LP",
-    email: "lperez@clinica.com",
-    telefono: "985 987 321",
-    cmp: "078901",
-    area: "nutricion",
-    especialidad: "Nutricionista Clínica",
-    horario: "8:00 AM - 2:00 PM",
-    cuposDia: 15,
-    direccion: "Av. Universitaria 321, Lima",
-    estado: "activo",
-  },
-  {
-    id: 5,
-    nombre: "Dr. Fernando López Díaz",
-    iniciales: "FL",
-    email: "flopez@clinica.com",
-    telefono: "984 654 987",
-    cmp: "089012",
-    area: "medicina_general",
-    especialidad: "Médico General",
-    horario: "7:00 AM - 3:00 PM",
-    cuposDia: 20,
-    direccion: "Av. Arequipa 654, Lima",
-    estado: "inactivo",
-  },
-]);
+const medicos = ref<Medico[]>([]);
+const areas = ref<Area[]>([]);
+const loading = ref(false);
+
+const fetchData = async () => {
+  loading.value = true;
+  try {
+    const [medicosRes, areasRes] = await Promise.all([
+      medicoService.getMedicos(),
+      areaService.getAreas()
+    ]);
+    medicos.value = medicosRes;
+    areas.value = areasRes.data;
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    Swal.fire('Error', 'No se pudieron cargar los datos', 'error');
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(() => {
+  fetchData();
+});
 
 const medicosFiltrados = computed(() => {
   return medicos.value.filter((medico) => {
@@ -395,10 +337,9 @@ const medicosFiltrados = computed(() => {
       !filtros.value.estado || medico.estado === filtros.value.estado;
     const cumpleBusqueda =
       !filtros.value.busqueda ||
-      medico.nombre
-        .toLowerCase()
-        .includes(filtros.value.busqueda.toLowerCase()) ||
-      medico.cmp.includes(filtros.value.busqueda);
+      medico.nombre.toLowerCase().includes(filtros.value.busqueda.toLowerCase()) ||
+      (medico.dni && medico.dni.includes(filtros.value.busqueda)) ||
+      (medico.username && medico.username.includes(filtros.value.busqueda));
 
     return cumpleArea && cumpleEstado && cumpleBusqueda;
   });
@@ -436,23 +377,14 @@ watch(medicosFiltrados, () => {
   currentPage.value = 1;
 });
 
-const formatArea = (area: string): string => {
-  const areas: Record<string, string> = {
-    odontologia: "Odontología",
-    psicologia: "Psicología",
-    nutricion: "Nutrición",
-    medicina_general: "Medicina General",
-  };
-  return areas[area] || area;
-};
-
-const obtenerIniciales = (nombre: string): string => {
-  const palabras = nombre.split(" ");
-  return palabras
-    .slice(0, 2)
-    .map((p) => p[0])
-    .join("")
-    .toUpperCase();
+const formatArea = (areaKey: string): string => {
+  if (!areaKey) return '-';
+  // normalize areaKey to lower case and match with area nombre
+  const areaObj = areas.value.find(a =>
+    a.nombre.toLowerCase().replace(/ /g, '_') === areaKey ||
+    a.nombre.toLowerCase() === areaKey.toLowerCase()
+  );
+  return areaObj ? areaObj.nombre : areaKey;
 };
 
 const abrirModalCrear = () => {
@@ -464,11 +396,14 @@ const abrirModalCrear = () => {
     email: "",
     telefono: "",
     cmp: "",
+    dni: "",
     area: "",
     especialidad: "",
     horario: "",
     cuposDia: 10,
     direccion: "",
+    username: "",
+    password: ""
   };
 };
 
@@ -481,88 +416,55 @@ const editarMedico = (medico: Medico) => {
     email: medico.email,
     telefono: medico.telefono,
     cmp: medico.cmp,
+    dni: medico.dni,
     area: medico.area,
     especialidad: medico.especialidad,
     horario: medico.horario,
     cuposDia: medico.cuposDia,
     direccion: medico.direccion || "",
+    username: medico.username,
+    password: "",
   };
   if (modalDetalle.value.visible) {
     cerrarModalDetalle();
   }
 };
 
-interface FormData {
-  id: number;
-  nombre: string;
-  email: string;
-  telefono: string;
-  cmp: string;
-  area: string;
-  especialidad: string;
-  horario: string;
-  cuposDia: number;
-  direccion: string;
-}
-
-const guardarMedico = (data: FormData) => {
-  // Actualizar formData con los datos recibidos
-  formData.value = { ...data };
-
-  if (modalForm.value.esEdicion) {
-    // Actualizar médico existente
-    const index = medicos.value.findIndex((m) => m.id === data.id);
-    if (index !== -1) {
-      const existingMedico = medicos.value[index];
-      if (existingMedico) {
-        medicos.value[index] = {
-          ...existingMedico,
-          id: existingMedico.id,
-          nombre: data.nombre,
-          iniciales: obtenerIniciales(data.nombre),
-          email: data.email,
-          telefono: data.telefono,
-          cmp: data.cmp,
-          area: data.area,
-          especialidad: data.especialidad,
-          horario: data.horario,
-          cuposDia: data.cuposDia,
-          direccion: data.direccion,
-          estado: existingMedico.estado
-        };
-      }
-      console.log("Médico actualizado:", medicos.value[index]);
+const guardarMedico = async (data: FormDataLocal) => {
+  try {
+    if (modalForm.value.esEdicion) {
+      await medicoService.updateMedico(data.id, {
+        name: data.nombre,
+        username: data.username,
+        role: 'medico',
+        password: data.password || undefined
+      });
+    } else {
+      await medicoService.createMedico({
+        name: data.nombre,
+        username: data.username,
+        password: data.password,
+        role: 'medico',
+        dni: data.dni || data.cmp
+      });
     }
-  } else {
-    // Crear nuevo médico
-    const nuevoMedico: Medico = {
-      id: medicos.value.length + 1,
-      nombre: data.nombre,
-      iniciales: obtenerIniciales(data.nombre),
-      email: data.email,
-      telefono: data.telefono,
-      cmp: data.cmp,
-      area: data.area,
-      especialidad: data.especialidad,
-      horario: data.horario,
-      cuposDia: data.cuposDia,
-      direccion: data.direccion,
-      estado: "activo",
-    };
-    medicos.value.push(nuevoMedico);
-    console.log("Nuevo médico creado:", nuevoMedico);
+
+    await fetchData();
+
+    cerrarModalForm();
+
+    Swal.fire({
+      title: modalForm.value.esEdicion ? '¡Actualizado!' : '¡Registrado!',
+      text: `El médico ha sido ${modalForm.value.esEdicion ? 'actualizado' : 'registrado'} exitosamente.`,
+      icon: 'success',
+      timer: 2000,
+      showConfirmButton: false
+    });
+  } catch (error: any) {
+    console.error(error);
+    const msg = error.response?.data?.error || 'Ocurrió un error al guardar';
+    Swal.fire('Error', msg, 'error');
   }
-  console.log(modalForm.value.esEdicion ? "Médico actualizado" : "Nuevo médico creado");
-
-  cerrarModalForm();
-
-  Swal.fire({
-    title: modalForm.value.esEdicion ? '¡Actualizado!' : '¡Registrado!',
-    text: `El médico ha sido ${modalForm.value.esEdicion ? 'actualizado' : 'registrado'} exitosamente.`,
-    icon: 'success',
-    timer: 2000,
-    showConfirmButton: false
-  });
 };
 
 const verDetalle = (medico: Medico) => {
@@ -573,7 +475,7 @@ const verDetalle = (medico: Medico) => {
 const toggleEstado = async (medico: Medico) => {
   const accion = medico.estado === "activo" ? "desactivar" : "activar";
   const nuevoEstado = medico.estado === "activo" ? "inactivo" : "activo";
-  const colorBoton = medico.estado === "activo" ? "#EF4444" : "#10B981"; // Rojo para desactivar, Verde para activar
+  const colorBoton = medico.estado === "activo" ? "#EF4444" : "#10B981";
 
   const result = await Swal.fire({
     title: `¿${accion.charAt(0).toUpperCase() + accion.slice(1)} médico?`,
@@ -588,19 +490,22 @@ const toggleEstado = async (medico: Medico) => {
 
   if (result.isConfirmed) {
     procesandoMedicoId.value = medico.id;
-    // Simular petición al servidor
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    medico.estado = nuevoEstado;
-    procesandoMedicoId.value = null;
-
-    Swal.fire({
-      title: nuevoEstado === 'activo' ? '¡Activado!' : '¡Desactivado!',
-      text: `El médico ha sido ${accion}do exitosamente.`,
-      icon: 'success',
-      timer: 2000,
-      showConfirmButton: false
-    });
+    try {
+      await medicoService.toggleEstado(medico.id, nuevoEstado === 'activo');
+      medico.estado = nuevoEstado;
+      Swal.fire({
+        title: nuevoEstado === 'activo' ? '¡Activado!' : '¡Desactivado!',
+        text: `El médico ha sido ${accion}do exitosamente.`,
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    } catch (error) {
+      console.error(error);
+      Swal.fire('Error', 'No se pudo cambiar el estado', 'error');
+    } finally {
+      procesandoMedicoId.value = null;
+    }
   }
 };
 

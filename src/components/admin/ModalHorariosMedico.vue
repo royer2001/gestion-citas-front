@@ -9,7 +9,7 @@
                 class="bg-white rounded-2xl max-w-4xl w-full shadow-2xl transform transition-all max-h-[90vh] overflow-hidden flex flex-col">
 
                 <!-- Header del modal -->
-                <div class="bg-gradient-to-r from-teal-600 to-emerald-600 px-6 py-4 text-white">
+                <div class="bg-gradient-to-r from-teal-600 to-teal-700 px-6 py-4 text-white">
                     <div class="flex justify-between items-center">
                         <div class="flex items-center gap-4">
                             <div
@@ -78,35 +78,57 @@
                                 <div v-if="dia.esDelMes">
                                     <div class="font-bold text-gray-700 mb-2 text-sm">{{ dia.numero }}</div>
 
+                                    <!-- Turno Mañana -->
                                     <div v-if="dia.turnos?.M"
-                                        class="text-xs bg-amber-500 text-white px-2 py-1 rounded mb-1 flex items-center justify-between group/turno">
-                                        <div class="flex items-center gap-1">
-                                            <SunIcon class="w-3 h-3" />
-                                            <span>{{ dia.turnos.M.cupos }}</span>
+                                        class="bg-gradient-to-r from-amber-400 to-amber-500 text-white px-2 py-1.5 rounded-lg mb-1 flex items-center justify-between group/turno shadow-sm hover:shadow-md transition-all">
+                                        <div class="flex items-center gap-2 cursor-pointer"
+                                            @click="abrirEditarCupos(dia.turnos.M)" title="Editar cupos">
+                                            <SunIcon class="w-4 h-4" />
+                                            <span class="font-semibold text-sm">{{ dia.turnos.M.cupos }}</span>
+                                            <span
+                                                class="opacity-50 group-hover/turno:opacity-100 hover:bg-teal-600 rounded p-0.5 transition">
+                                                <PencilIcon class="w-3.5 h-3.5" />
+                                            </span>
                                         </div>
                                         <button @click.stop="eliminarHorario(dia.turnos.M.id)"
-                                            class="opacity-0 group-hover/turno:opacity-100 hover:bg-red-600 rounded p-0.5 transition"
+                                            class="opacity-50 group-hover/turno:opacity-100 hover:bg-red-600 rounded p-0.5 transition"
                                             title="Eliminar">
-                                            <XMarkIcon class="w-3 h-3" />
+                                            <TrashIcon class="w-3.5 h-3.5" />
                                         </button>
                                     </div>
+                                    <!-- Botón para agregar turno mañana si no existe -->
+                                    <button v-else @click="abrirCrearHorario(dia.fecha, 'M')"
+                                        class="w-full mb-1 px-2 py-1 border-2 border-dashed border-amber-300 text-amber-500 rounded-lg hover:bg-amber-50 hover:border-amber-400 transition-all flex items-center justify-center gap-1 text-xs group">
+                                        <PlusIcon class="w-3.5 h-3.5" />
+                                        <SunIcon class="w-3 h-3" />
+                                        <span class="hidden group-hover:inline">Mañana</span>
+                                    </button>
 
+                                    <!-- Turno Tarde -->
                                     <div v-if="dia.turnos?.T"
-                                        class="text-xs bg-indigo-500 text-white px-2 py-1 rounded flex items-center justify-between group/turno">
-                                        <div class="flex items-center gap-1">
-                                            <MoonIcon class="w-3 h-3" />
-                                            <span>{{ dia.turnos.T.cupos }}</span>
+                                        class="bg-gradient-to-r from-indigo-400 to-indigo-500 text-white px-2 py-1.5 rounded-lg flex items-center justify-between group/turno shadow-sm hover:shadow-md transition-all">
+                                        <div class="flex items-center gap-2 cursor-pointer"
+                                            @click="abrirEditarCupos(dia.turnos.T)" title="Editar cupos">
+                                            <MoonIcon class="w-4 h-4" />
+                                            <span class="font-semibold text-sm">{{ dia.turnos.T.cupos }}</span>
+                                            <span
+                                                class="opacity-50 group-hover/turno:opacity-100 hover:bg-teal-600 rounded p-0.5 transition">
+                                                <PencilIcon class="w-3.5 h-3.5" />
+                                            </span>
                                         </div>
                                         <button @click.stop="eliminarHorario(dia.turnos.T.id)"
-                                            class="opacity-0 group-hover/turno:opacity-100 hover:bg-red-600 rounded p-0.5 transition"
+                                            class="opacity-50 group-hover/turno:opacity-100 hover:bg-red-600 rounded p-0.5 transition"
                                             title="Eliminar">
-                                            <XMarkIcon class="w-3 h-3" />
+                                            <TrashIcon class="w-3.5 h-3.5" />
                                         </button>
                                     </div>
-
-                                    <div v-if="!dia.turnos?.M && !dia.turnos?.T" class="text-xs text-gray-400 italic">
-                                        -
-                                    </div>
+                                    <!-- Botón para agregar turno tarde si no existe -->
+                                    <button v-else @click="abrirCrearHorario(dia.fecha, 'T')"
+                                        class="w-full px-2 py-1 border-2 border-dashed border-indigo-300 text-indigo-500 rounded-lg hover:bg-indigo-50 hover:border-indigo-400 transition-all flex items-center justify-center gap-1 text-xs group">
+                                        <PlusIcon class="w-3.5 h-3.5" />
+                                        <MoonIcon class="w-3 h-3" />
+                                        <span class="hidden group-hover:inline">Tarde</span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -126,21 +148,125 @@
             </div>
         </div>
     </transition>
+
+    <!-- Modal para editar cupos -->
+    <transition enter-active-class="transition ease-out duration-150" enter-from-class="opacity-0"
+        enter-to-class="opacity-100" leave-active-class="transition ease-in duration-100" leave-from-class="opacity-100"
+        leave-to-class="opacity-0">
+        <div v-if="editandoCupos"
+            class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60] px-4"
+            @click.self="cerrarEditarCupos">
+            <div class="bg-white rounded-xl max-w-sm w-full shadow-2xl p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <component :is="horarioEditando?.turno === 'M' ? SunIcon : MoonIcon"
+                        :class="horarioEditando?.turno === 'M' ? 'w-5 h-5 text-amber-500' : 'w-5 h-5 text-indigo-500'" />
+                    Editar Cupos - {{ horarioEditando?.turno === 'M' ? 'Mañana' : 'Tarde' }}
+                </h3>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Número de Cupos</label>
+                    <input type="number" v-model.number="nuevosCupos" min="1" max="100"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-center text-lg font-semibold"
+                        @keyup.enter="guardarCupos" />
+                </div>
+
+                <div class="flex gap-3">
+                    <button @click="guardarCupos" :disabled="guardandoCupos"
+                        class="flex-1 bg-teal-600 hover:bg-teal-700 disabled:bg-gray-400 text-white font-semibold py-2 px-4 rounded-lg transition flex items-center justify-center gap-2">
+                        <ArrowPathIcon v-if="guardandoCupos" class="w-4 h-4 animate-spin" />
+                        <CheckIcon v-else class="w-4 h-4" />
+                        {{ guardandoCupos ? 'Guardando...' : 'Guardar' }}
+                    </button>
+                    <button @click="cerrarEditarCupos"
+                        class="px-4 py-2 border border-gray-300 text-gray-600 hover:bg-gray-50 font-medium rounded-lg transition">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </transition>
+
+    <!-- Modal para crear horario -->
+    <transition enter-active-class="transition ease-out duration-150" enter-from-class="opacity-0"
+        enter-to-class="opacity-100" leave-active-class="transition ease-in duration-100" leave-from-class="opacity-100"
+        leave-to-class="opacity-0">
+        <div v-if="creandoHorario"
+            class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60] px-4"
+            @click.self="cerrarCrearHorario">
+            <div class="bg-white rounded-xl max-w-sm w-full shadow-2xl p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <component :is="nuevoHorario.turno === 'M' ? SunIcon : MoonIcon"
+                        :class="nuevoHorario.turno === 'M' ? 'w-5 h-5 text-amber-500' : 'w-5 h-5 text-indigo-500'" />
+                    Crear Horario - {{ nuevoHorario.turno === 'M' ? 'Mañana' : 'Tarde' }}
+                </h3>
+
+                <p class="text-sm text-gray-600 mb-4">
+                    Fecha: <span class="font-semibold">{{ formatFechaCrear(nuevoHorario.fecha) }}</span>
+                </p>
+
+                <!-- Información del Médico y Área -->
+                <div class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div
+                            class="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center font-bold text-teal-700 text-sm">
+                            {{ getInitials(medico?.name || '') }}
+                        </div>
+                        <div>
+                            <p class="font-semibold text-gray-800">{{ medico?.name }}</p>
+                            <p class="text-sm text-teal-600">{{ getNombreArea(nuevoHorario.area_id) }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Número de Cupos -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Número de Cupos</label>
+                    <input type="number" v-model.number="nuevoHorario.cupos" min="1" max="100"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-center text-lg font-semibold"
+                        @keyup.enter="crearHorario" />
+                </div>
+
+                <div class="flex gap-3">
+                    <button @click="crearHorario" :disabled="guardandoNuevoHorario || !nuevoHorario.area_id"
+                        class="flex-1 bg-teal-600 hover:bg-teal-700 disabled:bg-gray-400 text-white font-semibold py-2 px-4 rounded-lg transition flex items-center justify-center gap-2">
+                        <ArrowPathIcon v-if="guardandoNuevoHorario" class="w-4 h-4 animate-spin" />
+                        <PlusIcon v-else class="w-4 h-4" />
+                        {{ guardandoNuevoHorario ? 'Creando...' : 'Crear' }}
+                    </button>
+                    <button @click="cerrarCrearHorario"
+                        class="px-4 py-2 border border-gray-300 text-gray-600 hover:bg-gray-50 font-medium rounded-lg transition">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </transition>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import Swal from 'sweetalert2'
 import horarioService, { type Horario } from '../../services/horarioService'
+import api from '../../services/api'
 import {
     CalendarIcon,
     SunIcon,
     MoonIcon,
     XMarkIcon,
     ArrowPathIcon,
-    CalendarDaysIcon
+    CalendarDaysIcon,
+    PencilIcon,
+    CheckIcon,
+    TrashIcon,
+    PlusIcon
 } from '@heroicons/vue/24/outline'
 import HsMonthYearPicker from '../common/HsMonthYearPicker.vue'
+
+interface Area {
+    id: number
+    nombre: string
+    activo: boolean
+}
 
 interface Props {
     visible: boolean
@@ -152,6 +278,8 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
     (e: 'close'): void
     (e: 'deleted'): void
+    (e: 'updated'): void
+    (e: 'created'): void
 }>()
 
 const diasSemana = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
@@ -159,6 +287,23 @@ const diasSemana = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
 const loading = ref(false)
 const horarios = ref<Horario[]>([])
 const mesSeleccionado = ref('')
+const areas = ref<Area[]>([])
+
+// Estado para editar cupos
+const editandoCupos = ref(false)
+const horarioEditando = ref<Horario | null>(null)
+const nuevosCupos = ref(0)
+const guardandoCupos = ref(false)
+
+// Estado para crear horario
+const creandoHorario = ref(false)
+const guardandoNuevoHorario = ref(false)
+const nuevoHorario = ref({
+    fecha: '',
+    turno: 'M' as 'M' | 'T',
+    area_id: '' as number | '',
+    cupos: 7
+})
 
 const getInitials = (name: string) => {
     if (!name) return '?'
@@ -170,6 +315,27 @@ const getMesNombre = (mes: string) => {
     const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
     const [year, month] = mes.split('-').map(Number)
     return `${meses[(month || 1) - 1]} ${year}`
+}
+
+const formatFechaCrear = (fecha: string) => {
+    if (!fecha) return ''
+    const [year, month, day] = fecha.split('-')
+    const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+    return `${day} ${meses[parseInt(month || '1') - 1]} ${year}`
+}
+
+const getNombreArea = (areaId: number | '') => {
+    if (!areaId) return 'Sin área asignada'
+
+    // Primero buscar en los horarios existentes
+    const horarioConArea = horarios.value.find(h => h.area_id === areaId)
+    if (horarioConArea?.area_nombre) {
+        return horarioConArea.area_nombre
+    }
+
+    // Si no, buscar en la lista de áreas
+    const area = areas.value.find(a => a.id === areaId)
+    return area?.nombre || 'Área desconocida'
 }
 
 const diasDelMes = computed(() => {
@@ -212,6 +378,15 @@ const diasDelMes = computed(() => {
     return dias
 })
 
+const cargarAreas = async () => {
+    try {
+        const { data } = await api.get<Area[]>('/areas/')
+        areas.value = data.filter(a => a.activo)
+    } catch (error) {
+        console.error('Error cargando áreas:', error)
+    }
+}
+
 const cargarHorarios = async () => {
     if (!props.medico) return
 
@@ -227,6 +402,121 @@ const cargarHorarios = async () => {
         horarios.value = []
     } finally {
         loading.value = false
+    }
+}
+
+const abrirEditarCupos = (horario: Horario) => {
+    horarioEditando.value = horario
+    nuevosCupos.value = horario.cupos
+    editandoCupos.value = true
+}
+
+const cerrarEditarCupos = () => {
+    editandoCupos.value = false
+    horarioEditando.value = null
+    nuevosCupos.value = 0
+}
+
+const guardarCupos = async () => {
+    if (!horarioEditando.value?.id || nuevosCupos.value < 1) return
+
+    guardandoCupos.value = true
+    try {
+        await horarioService.actualizarHorario(horarioEditando.value.id, { cupos: nuevosCupos.value })
+
+        await Swal.fire({
+            title: '¡Actualizado!',
+            text: 'Los cupos han sido actualizados.',
+            icon: 'success',
+            timer: 1500,
+            showConfirmButton: false
+        })
+
+        await cargarHorarios()
+        emit('updated')
+        cerrarEditarCupos()
+    } catch (error) {
+        console.error('Error al actualizar cupos:', error)
+        Swal.fire({
+            title: 'Error',
+            text: 'No se pudieron actualizar los cupos',
+            icon: 'error'
+        })
+    } finally {
+        guardandoCupos.value = false
+    }
+}
+
+// Funciones para crear horario
+const abrirCrearHorario = (fecha: string, turno: 'M' | 'T') => {
+    // Obtener el area_id por defecto del médico (desde sus horarios existentes o del objeto medico)
+    let defaultAreaId: number | '' = ''
+
+    // Primero intentar obtener el área de los horarios existentes del médico
+    const primerHorario = horarios.value[0]
+    if (primerHorario && primerHorario.area_id) {
+        defaultAreaId = primerHorario.area_id
+    }
+    // Si no hay horarios, intentar obtener del objeto medico
+    else if (props.medico?.area_id) {
+        defaultAreaId = props.medico.area_id
+    }
+
+    nuevoHorario.value = {
+        fecha,
+        turno,
+        area_id: defaultAreaId,
+        cupos: 7
+    }
+    creandoHorario.value = true
+}
+
+const cerrarCrearHorario = () => {
+    creandoHorario.value = false
+    nuevoHorario.value = {
+        fecha: '',
+        turno: 'M',
+        area_id: '',
+        cupos: 7
+    }
+}
+
+const crearHorario = async () => {
+    if (!nuevoHorario.value.area_id || !nuevoHorario.value.fecha || !props.medico) return
+
+    guardandoNuevoHorario.value = true
+    try {
+        await horarioService.crearHorario({
+            medico_id: props.medico.id,
+            area_id: nuevoHorario.value.area_id as number,
+            fecha: nuevoHorario.value.fecha,
+            turno: nuevoHorario.value.turno,
+            cupos: nuevoHorario.value.cupos,
+            dia_semana: new Date(nuevoHorario.value.fecha).getDay(),
+            hora_inicio: nuevoHorario.value.turno === 'M' ? '08:00' : '14:00',
+            hora_fin: nuevoHorario.value.turno === 'M' ? '13:00' : '19:00'
+        })
+
+        await Swal.fire({
+            title: '¡Creado!',
+            text: 'El horario ha sido creado correctamente.',
+            icon: 'success',
+            timer: 1500,
+            showConfirmButton: false
+        })
+
+        await cargarHorarios()
+        emit('created')
+        cerrarCrearHorario()
+    } catch (error) {
+        console.error('Error al crear horario:', error)
+        Swal.fire({
+            title: 'Error',
+            text: 'No se pudo crear el horario',
+            icon: 'error'
+        })
+    } finally {
+        guardandoNuevoHorario.value = false
     }
 }
 
@@ -277,7 +567,7 @@ watch(() => props.visible, async (newVal) => {
     if (newVal && props.medico) {
         const hoy = new Date()
         mesSeleccionado.value = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`
-        await cargarHorarios()
+        await Promise.all([cargarHorarios(), cargarAreas()])
     }
 })
 </script>

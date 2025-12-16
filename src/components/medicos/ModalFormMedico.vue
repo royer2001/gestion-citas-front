@@ -39,80 +39,43 @@
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    CMP <span class="text-red-500">*</span>
+                                    DNI <span class="text-red-500">*</span>
                                 </label>
-                                <input type="text" v-model="form.cmp" required
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                                    placeholder="123456" />
+                                <input type="text" v-model="form.dni" required :disabled="esEdicion"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:bg-gray-100"
+                                    placeholder="12345678" />
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Email <span class="text-red-500">*</span>
+                                    Usuario <span class="text-red-500">*</span>
                                 </label>
-                                <input type="email" v-model="form.email" required
+                                <input type="text" v-model="form.username" required
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                                    placeholder="doctor@ejemplo.com" />
+                                    placeholder="usuario" />
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Teléfono <span class="text-red-500">*</span>
+                                    Contraseña <span v-if="!esEdicion" class="text-red-500">*</span>
                                 </label>
-                                <input type="tel" v-model="form.telefono" required
+                                <input type="password" v-model="form.password" :required="!esEdicion"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                                    placeholder="999 999 999" />
+                                    placeholder="********" />
+                                <p v-if="esEdicion" class="text-xs text-gray-500 mt-1">Dejar en blanco para mantener la
+                                    actual</p>
                             </div>
 
-                            <div>
+                            <!-- Commented out Area field as it is not directly assignable via create user 
+                            <div class="md:col-span-2"> 
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Área <span class="text-red-500">*</span>
+                                    Área (Especialidad principal)
                                 </label>
-                                <select v-model="form.area" required
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white">
-                                    <option value="">Seleccione un área</option>
-                                    <option value="odontologia">Odontología</option>
-                                    <option value="psicologia">Psicología</option>
-                                    <option value="nutricion">Nutrición</option>
-                                    <option value="medicina_general">Medicina General</option>
-                                </select>
+                                <p class="text-xs text-amber-600 mb-2">
+                                   * Para asignar un área, debe configurar los horarios del médico.
+                                </p>
                             </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Especialidad <span class="text-red-500">*</span>
-                                </label>
-                                <input type="text" v-model="form.especialidad" required
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                                    placeholder="Ej: Ortodoncista" />
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Horario <span class="text-red-500">*</span>
-                                </label>
-                                <input type="text" v-model="form.horario" required
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                                    placeholder="8:00 AM - 2:00 PM" />
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Cupos por Día <span class="text-red-500">*</span>
-                                </label>
-                                <input type="number" v-model.number="form.cuposDia" required min="1" max="50"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                                    placeholder="10" />
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Dirección de Consultorio
-                            </label>
-                            <input type="text" v-model="form.direccion"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                                placeholder="Dirección completa" />
+                            -->
                         </div>
 
                         <div class="flex gap-3 pt-4">
@@ -139,20 +102,30 @@ import { XMarkIcon } from '@heroicons/vue/24/outline'
 interface FormData {
     id: number
     nombre: string
-    email: string
-    telefono: string
-    cmp: string
-    area: string
-    especialidad: string
-    horario: string
-    cuposDia: number
-    direccion: string
+    dni: string
+    username: string
+    password?: string
+    // Legacy fields to safe-guard typescript in parent
+    email?: string
+    telefono?: string
+    cmp?: string
+    area?: string
+    especialidad?: string
+    horario?: string
+    cuposDia?: number
+    direccion?: string
+}
+
+interface Area {
+    id: number
+    nombre: string
 }
 
 interface Props {
     visible: boolean
     esEdicion: boolean
     medicoData: FormData | null
+    areas?: Area[]
 }
 
 const props = defineProps<Props>()
@@ -165,31 +138,24 @@ const emit = defineEmits<{
 const form = ref<FormData>({
     id: 0,
     nombre: '',
-    email: '',
-    telefono: '',
-    cmp: '',
-    area: '',
-    especialidad: '',
-    horario: '',
-    cuposDia: 10,
-    direccion: ''
+    dni: '',
+    username: '',
+    password: ''
 })
 
 watch(() => props.visible, (newVal) => {
     if (newVal && props.medicoData) {
+        // Ensure we map from parent structure
+        // If parent passed 'cmp' as value in 'dni' or vice versa, handle it here if needed.
+        // Assuming parent passes correct fields.
         form.value = { ...props.medicoData }
     } else if (newVal && !props.esEdicion) {
         form.value = {
             id: 0,
             nombre: '',
-            email: '',
-            telefono: '',
-            cmp: '',
-            area: '',
-            especialidad: '',
-            horario: '',
-            cuposDia: 10,
-            direccion: ''
+            dni: '',
+            username: '',
+            password: ''
         }
     }
 })

@@ -177,7 +177,7 @@
                             <div class="bg-blue-100 p-2 rounded-full mr-3 group-hover:bg-blue-200 transition">
                                 <UserPlusIcon class="w-5 h-5 text-blue-600" />
                             </div>
-                            <span class="font-medium text-gray-700 group-hover:text-blue-700">Registrar Paciente</span>
+                            <span class="font-medium text-gray-700 group-hover:text-blue-700">Registrar citas</span>
                         </router-link>
 
                         <router-link to="/citas"
@@ -185,7 +185,7 @@
                             <div class="bg-emerald-100 p-2 rounded-full mr-3 group-hover:bg-emerald-200 transition">
                                 <CalendarDaysIcon class="w-5 h-5 text-emerald-600" />
                             </div>
-                            <span class="font-medium text-gray-700 group-hover:text-emerald-700">Nueva Cita</span>
+                            <span class="font-medium text-gray-700 group-hover:text-emerald-700">Gestionar citas</span>
                         </router-link>
 
                         <router-link to="/medicos"

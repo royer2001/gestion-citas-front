@@ -96,6 +96,11 @@ const horarioService = {
         return api.delete(`/horarios/${id}`)
     },
 
+    // Actualizar un horario específico (cupos, area_id)
+    actualizarHorario(id: number, data: { cupos?: number; area_id?: number }) {
+        return api.put(`/horarios/${id}`, data)
+    },
+
     // Eliminar horarios de un mes
     eliminarHorariosMes(medico_id: number, mes: string, turno?: 'M' | 'T') {
         return api.delete('/horarios/mensual', {
