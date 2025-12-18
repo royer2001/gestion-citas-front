@@ -29,6 +29,21 @@
 
     <!-- ==================== TAB: ADMINISTRACIÓN DE CITAS ==================== -->
     <div v-show="activeTab === 'administracion'">
+      <!-- Banner informativo para profesionales -->
+      <div v-if="isProfesional" class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6 rounded-r-lg">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <UserCircleIcon class="h-5 w-5 text-blue-400" />
+          </div>
+          <div class="ml-3">
+            <p class="text-sm text-blue-700">
+              <span class="font-medium">Vista de Profesional:</span>
+              Estás viendo únicamente las citas asignadas a ti.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <!-- Filtros -->
       <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
         <div class="flex items-center gap-3 mb-6">
@@ -592,6 +607,7 @@ import {
   CalendarDaysIcon,
   BuildingOffice2Icon,
   ClipboardDocumentListIcon,
+  UserCircleIcon,
   DocumentMagnifyingGlassIcon,
   ExclamationTriangleIcon,
   ClockIcon,
@@ -693,6 +709,12 @@ const canUseManagementActions = computed(() => {
 // Solo Admin y Asistente (el Médico no puede imprimir)
 const canSeePrintTab = computed(() => {
   return auth.user?.rol_id === 1 || auth.user?.rol_id === 3
+})
+
+// Indicador de si el usuario es un profesional
+// Si es profesional, el backend filtra automáticamente las citas asignadas a él
+const isProfesional = computed(() => {
+  return auth.user?.rol_id === 2
 })
 
 // Tab activo
