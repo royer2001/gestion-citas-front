@@ -112,7 +112,7 @@
             <div
               class="w-11 h-11 rounded-full bg-gradient-to-br from-white/30 to-white/10 flex items-center justify-center flex-shrink-0 ring-2 ring-white/40 group-hover:ring-white/60 group-hover:scale-105 transition-all duration-300 shadow-lg">
               <span v-if="auth.user?.nombres_completos" class="text-white font-bold text-sm">{{ getUserInitials
-              }}</span>
+                }}</span>
               <UserIcon v-else class="w-6 h-6 text-white" />
             </div>
             <div :class="{ 'md:hidden': !sidebarOpen }" class="flex-1 min-w-0 text-left">
@@ -315,7 +315,34 @@ const cerrarSesion = async () => {
       showConfirmButton: false
     })
   }
-i  const fecha = new Date()
+}
+
+const tituloActual = computed(() => {
+  const titulos: Record<string, string> = {
+    '/dashboard': 'Dashboard',
+    '/pacientes': 'Gestión de Pacientes',
+    '/citas': 'Administración de Citas',
+    '/medicos': 'Gestión de Profesionales',
+    '/reportes': 'Reportes y Estadísticas',
+    '/admin': 'Configuración'
+  }
+  return titulos[route.path] || 'Panel de Control'
+})
+
+const subtituloActual = computed(() => {
+  const subtitulos: Record<string, string> = {
+    '/dashboard': 'Vista general del sistema',
+    '/pacientes': 'Registro y gestión de pacientes',
+    '/citas': 'Control de citas médicas',
+    '/medicos': 'Administración del personal profesional',
+    '/reportes': 'Análisis y estadísticas del centro',
+    '/admin': 'Ajustes del sistema'
+  }
+  return subtitulos[route.path] || 'Bienvenido al sistema'
+})
+
+const fechaActual = computed(() => {
+  const fecha = new Date()
   return fecha.toLocaleDateString('es-PE', {
     weekday: 'long',
     year: 'numeric',
