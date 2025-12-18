@@ -188,12 +188,14 @@
                             <span class="font-medium text-gray-700 group-hover:text-emerald-700">Gestionar citas</span>
                         </router-link>
 
-                        <router-link to="/medicos"
+                        <!-- Solo visible para Administrador -->
+                        <router-link v-if="canSeeMedicos" to="/medicos"
                             class="flex items-center p-3 rounded-lg border border-gray-200 hover:bg-purple-50 hover:border-purple-200 transition group">
                             <div class="bg-purple-100 p-2 rounded-full mr-3 group-hover:bg-purple-200 transition">
                                 <IdentificationIcon class="w-5 h-5 text-purple-600" />
                             </div>
-                            <span class="font-medium text-gray-700 group-hover:text-purple-700">Gestionar Médicos</span>
+                            <span class="font-medium text-gray-700 group-hover:text-purple-700">Gestionar
+                                Profesionales</span>
                         </router-link>
                     </div>
                 </div>
@@ -258,6 +260,13 @@ import {
 
 const auth = useAuthStore();
 const isLoading = ref(true);
+
+// Permisos de navegación por rol
+// Rol 1 = Administrador, Rol 2 = Profesional, Rol 3 = Asistente
+const canSeeMedicos = computed(() => {
+    // Solo Administrador puede ver la sección de Profesionales
+    return auth.user?.rol_id === 1;
+});
 
 // Computed properties para el saludo personalizado
 const getSaludo = computed(() => {

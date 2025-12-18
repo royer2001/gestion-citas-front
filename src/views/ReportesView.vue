@@ -8,263 +8,423 @@
                         <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Reportes y Estadísticas</h1>
                         <p class="mt-1 text-sm text-gray-500">Analiza el rendimiento de las citas médicas</p>
                     </div>
-                    <button @click="exportarPDF"
-                        class="inline-flex items-center gap-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-2.5 px-5 rounded-xl shadow-lg shadow-red-500/25 transition-all duration-200 hover:shadow-xl hover:shadow-red-500/30">
-                        <DocumentTextIcon class="w-5 h-5" />
-                        Exportar PDF
-                    </button>
                 </div>
             </div>
 
-            <!-- Filtros de Fecha -->
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
-                <div class="flex items-center gap-3 mb-6">
-                    <div class="p-2 bg-emerald-100 rounded-lg">
-                        <FunnelIcon class="w-5 h-5 text-emerald-600" />
-                    </div>
-                    <h2 class="text-lg font-semibold text-gray-800">Filtros de Búsqueda</h2>
-                </div>
-                <div class="flex flex-col md:flex-row items-end gap-4">
-                    <div class="flex-1 w-full">
-                        <label class="block text-sm font-medium text-gray-600 mb-2">Rango de Fechas</label>
-                        <div class="flex items-center gap-3">
-                            <input type="date" v-model="filtros.fechaInicio"
-                                class="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all">
-                            <span class="text-gray-400 font-medium">—</span>
-                            <input type="date" v-model="filtros.fechaFin"
-                                class="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all">
-                        </div>
-                    </div>
-                    <div class="flex-1 w-full">
-                        <label class="block text-sm font-medium text-gray-600 mb-2">Especialidad</label>
-                        <select v-model="filtros.especialidad"
-                            class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all">
-                            <option value="">Todas las especialidades</option>
-                            <option value="odontologia">Odontología</option>
-                            <option value="psicologia">Psicología</option>
-                            <option value="nutricion">Nutrición</option>
-                            <option value="medicina_general">Medicina General</option>
-                        </select>
-                    </div>
-                    <button @click="generarReporte"
-                        class="w-full md:w-auto bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white font-semibold py-2.5 px-6 rounded-xl shadow-lg shadow-teal-500/25 transition-all duration-200 hover:shadow-xl hover:shadow-teal-500/30 flex items-center justify-center gap-2">
+            <!-- Tabs Navigation -->
+            <div class="mb-8 border-b border-gray-200">
+                <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                    <button @click="activeTab = 'estadisticas'" :class="[
+                        activeTab === 'estadisticas'
+                            ? 'border-teal-500 text-teal-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+                        'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2'
+                    ]">
                         <ChartBarIcon class="w-5 h-5" />
-                        Generar Reporte
+                        Estadísticas Generales
                     </button>
-                </div>
+                    <button @click="activeTab = 'indicadores'" :class="[
+                        activeTab === 'indicadores'
+                            ? 'border-teal-500 text-teal-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+                        'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2'
+                    ]">
+                        <PresentationChartLineIcon class="w-5 h-5" />
+                        Indicadores de Tesis
+                    </button>
+                </nav>
             </div>
 
-            <!-- KPI Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <!-- Total Citas -->
-                <div
-                    class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Total Citas</p>
-                            <p class="mt-2 text-4xl font-bold text-gray-900">{{ stats.totalCitas }}</p>
+
+            <!-- Tab: Estadísticas Generales -->
+            <div v-show="activeTab === 'estadisticas'">
+                <!-- Filtros de Fecha -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="p-2 bg-emerald-100 rounded-lg">
+                            <FunnelIcon class="w-5 h-5 text-emerald-600" />
                         </div>
-                        <div class="p-3 bg-teal-50 rounded-xl">
-                            <svg class="w-8 h-8 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                        </div>
+                        <h2 class="text-lg font-semibold text-gray-800">Filtros de Búsqueda</h2>
                     </div>
-                    <div class="mt-4 flex items-center text-sm">
-                        <span
-                            class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            <ArrowTrendingUpIcon class="w-3 h-3 mr-1" /> +5%
-                        </span>
-                        <span class="text-gray-500 ml-2">vs mes anterior</span>
+                    <div class="flex flex-col md:flex-row items-end gap-4">
+                        <div class="flex-1 w-full">
+                            <label class="block text-sm font-medium text-gray-600 mb-2">Rango de Fechas</label>
+                            <div class="flex items-center gap-3">
+                                <input type="date" v-model="filtros.fechaInicio"
+                                    class="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all">
+                                <span class="text-gray-400 font-medium">—</span>
+                                <input type="date" v-model="filtros.fechaFin"
+                                    class="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all">
+                            </div>
+                        </div>
+                        <div class="flex-1 w-full">
+                            <label class="block text-sm font-medium text-gray-600 mb-2">Especialidad</label>
+                            <select v-model="filtros.especialidad"
+                                class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all">
+                                <option value="">Todas las especialidades</option>
+                                <option v-for="area in areas" :key="area.id" :value="area.id">{{ area.nombre }}</option>
+                            </select>
+                        </div>
+                        <button @click="generarReporte"
+                            class="w-full md:w-auto bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white font-semibold py-2.5 px-6 rounded-xl shadow-lg shadow-teal-500/25 transition-all duration-200 hover:shadow-xl hover:shadow-teal-500/30 flex items-center justify-center gap-2">
+                            <ChartBarIcon class="w-5 h-5" />
+                            Generar Reporte
+                        </button>
                     </div>
                 </div>
 
-                <!-- Tasa de Asistencia -->
-                <div
-                    class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Tasa de Asistencia</p>
-                            <p class="mt-2 text-4xl font-bold text-gray-900">{{ stats.tasaAsistencia }}<span
-                                    class="text-2xl text-gray-400">%</span></p>
-                        </div>
-                        <div class="p-3 bg-blue-50 rounded-xl">
-                            <CheckCircleIcon class="w-8 h-8 text-blue-500" />
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <!-- Total Citas -->
+                    <div
+                        class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Total Citas</p>
+                                <p class="mt-2 text-4xl font-bold text-gray-900">{{ stats.totalCitas }}</p>
+                            </div>
+                            <div class="p-3 bg-teal-50 rounded-xl">
+                                <CalendarIcon class="w-8 h-8 text-teal-500" />
+                            </div>
                         </div>
                     </div>
-                    <div class="mt-4 flex items-center text-sm">
-                        <span
-                            class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            <ArrowTrendingUpIcon class="w-3 h-3 mr-1" /> +2%
-                        </span>
-                        <span class="text-gray-500 ml-2">mejora</span>
+
+                    <!-- Tasa de Asistencia -->
+                    <div
+                        class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Tasa de Asistencia
+                                </p>
+                                <p class="mt-2 text-4xl font-bold text-gray-900">{{ stats.tasaAsistencia }}<span
+                                        class="text-2xl text-gray-400">%</span></p>
+                            </div>
+                            <div class="p-3 bg-blue-50 rounded-xl">
+                                <CheckCircleIcon class="w-8 h-8 text-blue-500" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cancelaciones -->
+                    <div
+                        class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Cancelaciones</p>
+                                <p class="mt-2 text-4xl font-bold text-gray-900">{{ stats.cancelaciones }}</p>
+                            </div>
+                            <div class="p-3 bg-red-50 rounded-xl">
+                                <XCircleIcon class="w-8 h-8 text-red-500" />
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Cancelaciones -->
-                <div
-                    class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Cancelaciones</p>
-                            <p class="mt-2 text-4xl font-bold text-gray-900">{{ stats.cancelaciones }}</p>
-                        </div>
-                        <div class="p-3 bg-red-50 rounded-xl">
-                            <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="mt-4 flex items-center text-sm">
-                        <span
-                            class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                            <ArrowTrendingDownIcon class="w-3 h-3 mr-1" /> -1%
-                        </span>
-                        <span class="text-gray-500 ml-2">vs mes anterior</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Charts Section -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                <!-- Gráfico de Citas por Mes -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                    <div class="flex items-center justify-between mb-6">
-                        <div class="flex items-center gap-3">
+                <!-- Charts Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                        <div class="flex items-center gap-3 mb-6">
                             <div class="p-2 bg-emerald-100 rounded-lg">
                                 <ChartBarIcon class="w-5 h-5 text-emerald-600" />
                             </div>
                             <h3 class="text-lg font-semibold text-gray-800">Citas Atendidas por Mes</h3>
                         </div>
-                        <span class="text-xs font-medium text-gray-400 uppercase">Últimos 6 meses</span>
+                        <div ref="chartContainer" class="w-full h-64"></div>
                     </div>
-                    <div ref="chartContainer" class="w-full h-64"></div>
-                </div>
 
-                <!-- Gráfico de Pastel: Estado de Citas -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                    <div class="flex items-center justify-between mb-6">
-                        <div class="flex items-center gap-3">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                        <div class="flex items-center gap-3 mb-6">
                             <div class="p-2 bg-emerald-100 rounded-lg">
                                 <ChartPieIcon class="w-5 h-5 text-emerald-600" />
                             </div>
                             <h3 class="text-lg font-semibold text-gray-800">Estado de Citas</h3>
                         </div>
-                        <span class="text-xs font-medium text-gray-400 uppercase">Distribución</span>
+                        <div ref="pieChartContainer" class="w-full h-64 flex items-center justify-center"></div>
                     </div>
-                    <div class="flex flex-col md:flex-row items-center justify-around">
-                        <div ref="pieChartContainer" class="w-64 h-64 flex items-center justify-center"></div>
-                        <div class="mt-6 md:mt-0 space-y-4">
-                            <div class="flex items-center gap-3">
-                                <span
-                                    class="w-4 h-4 rounded-full bg-gradient-to-r from-teal-400 to-teal-500 shadow-sm"></span>
-                                <div>
-                                    <span class="text-sm text-gray-600">Atendidos</span>
-                                    <p class="text-xl font-bold text-gray-900">{{ stats.totalCitas - stats.cancelaciones
-                                        }}</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <span
-                                    class="w-4 h-4 rounded-full bg-gradient-to-r from-red-400 to-red-500 shadow-sm"></span>
-                                <div>
-                                    <span class="text-sm text-gray-600">Cancelados</span>
-                                    <p class="text-xl font-bold text-gray-900">{{ stats.cancelaciones }}</p>
-                                </div>
-                            </div>
+                </div>
+
+                <!-- Especialidades Section -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="p-2 bg-purple-100 rounded-lg">
+                            <BuildingOfficeIcon class="w-5 h-5 text-purple-600" />
                         </div>
+                        <h3 class="text-lg font-semibold text-gray-800">Citas por Especialidad</h3>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div v-for="esp in especialidades" :key="esp.nombre"
+                            class="bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition-colors">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-medium text-gray-700">{{ esp.nombre }}</span>
+                                <span class="text-lg font-bold text-gray-900">{{ esp.cantidad }}</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-purple-500 h-2 rounded-full transition-all duration-500"
+                                    :style="{ width: esp.porcentaje + '%' }"></div>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">{{ esp.porcentaje }}% del total</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla Detallada -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-emerald-100 rounded-lg">
+                                <TableCellsIcon class="w-5 h-5 text-emerald-600" />
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-800">Detalle de Citas</h3>
+                        </div>
+                        <button @click="exportarPDF"
+                            class="inline-flex items-center gap-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-2 px-4 rounded-xl shadow-lg transition-all duration-200 text-sm">
+                            <DocumentTextIcon class="w-4 h-4" />
+                            Exportar PDF
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th
+                                        class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                        Fecha</th>
+                                    <th
+                                        class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                        Paciente</th>
+                                    <th
+                                        class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                        Especialidad</th>
+                                    <th
+                                        class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                        Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                <tr v-for="cita in citasDetalle" :key="cita.id"
+                                    class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-6 py-4 text-sm text-gray-700">{{ cita.fecha }}</td>
+                                    <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ cita.paciente }}</td>
+                                    <td class="px-6 py-4 text-sm text-gray-700">{{ cita.especialidad }}</td>
+                                    <td class="px-6 py-4">
+                                        <span :class="getEstadoClass(cita.estado)"
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                                            {{ cita.estado }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr v-if="citasDetalle.length === 0">
+                                    <td colspan="4" class="px-6 py-8 text-center text-gray-500">
+                                        No hay datos disponibles. Selecciona un rango de fechas y genera el reporte.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Especialidades Section -->
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
-                <div class="flex items-center justify-between mb-6">
-                    <div class="flex items-center gap-3">
-                        <div class="p-2 bg-emerald-100 rounded-lg">
-                            <StarIcon class="w-5 h-5 text-emerald-600" />
+            <!-- Tab: Indicadores de Tesis -->
+            <div v-show="activeTab === 'indicadores'">
+                <!-- Filtros Indicadores -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="p-2 bg-indigo-100 rounded-lg">
+                            <FunnelIcon class="w-5 h-5 text-indigo-600" />
                         </div>
-                        <h3 class="text-lg font-semibold text-gray-800">Especialidades Más Solicitadas</h3>
+                        <h2 class="text-lg font-semibold text-gray-800">Período de Análisis (Indicadores de Tesis)</h2>
                     </div>
-                    <span class="text-xs font-medium text-gray-400 uppercase">Top 4</span>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div v-for="(esp, index) in especialidadesTop" :key="index" class="p-4 bg-gray-50 rounded-xl">
-                        <div class="flex justify-between items-center mb-3">
-                            <div class="flex items-center gap-2">
-                                <span
-                                    class="w-8 h-8 flex items-center justify-center bg-teal-100 text-teal-600 font-bold rounded-lg text-sm">
-                                    {{ index + 1 }}
-                                </span>
-                                <span class="font-medium text-gray-800">{{ esp.nombre }}</span>
+                    <div class="flex flex-col md:flex-row items-end gap-4">
+                        <div class="flex-1 w-full">
+                            <label class="block text-sm font-medium text-gray-600 mb-2">Rango de Fechas</label>
+                            <div class="flex items-center gap-3">
+                                <input type="date" v-model="indicadorFiltros.fechaInicio"
+                                    class="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500">
+                                <span class="text-gray-400 font-medium">—</span>
+                                <input type="date" v-model="indicadorFiltros.fechaFin"
+                                    class="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500">
                             </div>
-                            <span class="text-sm font-semibold text-teal-600">{{ esp.cantidad }} citas</span>
                         </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2.5">
-                            <div class="bg-gradient-to-r from-teal-400 to-teal-500 h-2.5 rounded-full transition-all duration-500"
-                                :style="{ width: esp.porcentaje + '%' }"></div>
+                        <div class="flex-1 w-full">
+                            <label class="block text-sm font-medium text-gray-600 mb-2">Área (Opcional)</label>
+                            <select v-model="indicadorFiltros.areaId"
+                                class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500">
+                                <option :value="null">Todas las áreas</option>
+                                <option v-for="area in areas" :key="area.id" :value="area.id">{{ area.nombre }}</option>
+                            </select>
                         </div>
+                        <button @click="cargarIndicadores" :disabled="indicadorLoading"
+                            class="w-full md:w-auto bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white font-semibold py-2.5 px-6 rounded-xl shadow-lg transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50">
+                            <PresentationChartLineIcon class="w-5 h-5" />
+                            {{ indicadorLoading ? 'Cargando...' : 'Calcular Indicadores' }}
+                        </button>
                     </div>
                 </div>
-            </div>
 
-            <!-- Tabla Detallada -->
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="p-2 bg-emerald-100 rounded-lg">
-                            <ClipboardDocumentListIcon class="w-5 h-5 text-emerald-600" />
-                        </div>
-                        <h3 class="text-lg font-semibold text-gray-800">Detalle de Atenciones</h3>
-                    </div>
-                    <span class="text-xs font-medium text-gray-400 uppercase">{{ detalleReporte.length }}
-                        registros</span>
+                <!-- Loading State -->
+                <div v-if="indicadorLoading" class="flex justify-center items-center py-20">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full">
-                        <thead>
-                            <tr class="bg-gray-50">
-                                <th
-                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                    Fecha</th>
-                                <th
-                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                    Especialidad</th>
-                                <th
-                                    class="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                    Total</th>
-                                <th
-                                    class="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                    Atendidas</th>
-                                <th
-                                    class="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                    Canceladas</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100">
-                            <tr v-for="(fila, index) in detalleReporte" :key="index"
-                                class="hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-4 text-sm text-gray-900 font-medium">{{ fila.fecha }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ fila.especialidad }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-700 text-center font-semibold">{{ fila.total }}
-                                </td>
-                                <td class="px-6 py-4 text-center">
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                        {{ fila.atendidas }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 text-center">
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                        {{ fila.canceladas }}
-                                    </span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+
+                <!-- Indicadores Cards -->
+                <div v-else-if="indicadores" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <!-- Utilización de Capacidad -->
+                    <div
+                        class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="p-3 bg-blue-50 rounded-xl">
+                                <ChartPieIcon class="w-8 h-8 text-blue-500" />
+                            </div>
+                            <span class="text-xs font-medium text-gray-400 uppercase">Dimensión 1</span>
+                        </div>
+                        <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">{{
+                            indicadores.utilizacion_capacidad.nombre }}</p>
+                        <p class="mt-2 text-4xl font-bold text-gray-900">
+                            {{ indicadores.utilizacion_capacidad.valor }}<span class="text-2xl text-gray-400">%</span>
+                        </p>
+                        <p class="mt-2 text-xs text-gray-500">{{ indicadores.utilizacion_capacidad.descripcion }}</p>
+                        <div class="mt-4 pt-4 border-t border-gray-100 text-xs text-gray-500">
+                            <p><strong>Citas programadas:</strong> {{
+                                indicadores.utilizacion_capacidad.componentes.citas_programadas }}</p>
+                            <p><strong>Cupos totales:</strong> {{
+                                indicadores.utilizacion_capacidad.componentes.cupos_totales }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Tasa de Inasistencia -->
+                    <div
+                        class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="p-3 bg-red-50 rounded-xl">
+                                <UserMinusIcon class="w-8 h-8 text-red-500" />
+                            </div>
+                            <span class="text-xs font-medium text-gray-400 uppercase">Dimensión 2</span>
+                        </div>
+                        <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">{{
+                            indicadores.tasa_inasistencia.nombre }}</p>
+                        <p class="mt-2 text-4xl font-bold text-gray-900">
+                            {{ indicadores.tasa_inasistencia.valor }}<span class="text-2xl text-gray-400">%</span>
+                        </p>
+                        <p class="mt-2 text-xs text-gray-500">{{ indicadores.tasa_inasistencia.descripcion }}</p>
+                        <div class="mt-4 pt-4 border-t border-gray-100 text-xs text-gray-500">
+                            <p><strong>No asistieron:</strong> {{ indicadores.tasa_inasistencia.componentes.no_shows }}
+                            </p>
+                            <p><strong>Citas confirmadas:</strong> {{
+                                indicadores.tasa_inasistencia.componentes.citas_confirmadas }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Lead Time -->
+                    <div
+                        class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="p-3 bg-amber-50 rounded-xl">
+                                <ClockIcon class="w-8 h-8 text-amber-500" />
+                            </div>
+                            <span class="text-xs font-medium text-gray-400 uppercase">Dimensión 3</span>
+                        </div>
+                        <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">{{
+                            indicadores.lead_time.nombre }}</p>
+                        <p class="mt-2 text-4xl font-bold text-gray-900">
+                            {{ indicadores.lead_time.valor }}<span class="text-2xl text-gray-400"> días</span>
+                        </p>
+                        <p class="mt-2 text-xs text-gray-500">{{ indicadores.lead_time.descripcion }}</p>
+                        <div class="mt-4 pt-4 border-t border-gray-100 text-xs text-gray-500">
+                            <p><strong>Fórmula:</strong> {{ indicadores.lead_time.formula }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Estadísticas Adicionales -->
+                <div v-if="indicadorEstadisticas"
+                    class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="p-2 bg-emerald-100 rounded-lg">
+                            <ChartBarIcon class="w-5 h-5 text-emerald-600" />
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-800">Estadísticas Adicionales del Período</h3>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-green-50 rounded-xl p-4 text-center">
+                            <p class="text-2xl font-bold text-green-600">{{ indicadorEstadisticas.citas_atendidas }}</p>
+                            <p class="text-sm text-gray-600">Citas Atendidas</p>
+                        </div>
+                        <div class="bg-red-50 rounded-xl p-4 text-center">
+                            <p class="text-2xl font-bold text-red-600">{{ indicadorEstadisticas.citas_canceladas }}</p>
+                            <p class="text-sm text-gray-600">Canceladas</p>
+                        </div>
+                        <div class="bg-amber-50 rounded-xl p-4 text-center">
+                            <p class="text-2xl font-bold text-amber-600">{{ indicadorEstadisticas.citas_no_asistio }}
+                            </p>
+                            <p class="text-sm text-gray-600">No Asistieron</p>
+                        </div>
+                        <div class="bg-indigo-50 rounded-xl p-4 text-center">
+                            <p class="text-2xl font-bold text-indigo-600">{{
+                                indicadorEstadisticas.tasa_atencion_efectiva }}%</p>
+                            <p class="text-sm text-gray-600">Tasa de Atención</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comparativo por Área -->
+                <div v-if="areasData.length > 0"
+                    class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="px-6 py-5 border-b border-gray-100 flex items-center gap-3">
+                        <div class="p-2 bg-purple-100 rounded-lg">
+                            <BuildingOfficeIcon class="w-5 h-5 text-purple-600" />
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-800">Comparativo por Área</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Área
+                                    </th>
+                                    <th class="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase">
+                                        Utilización</th>
+                                    <th class="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase">
+                                        Inasistencia</th>
+                                    <th class="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase">Lead
+                                        Time</th>
+                                    <th class="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase">
+                                        Total Citas</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                <tr v-for="area in areasData" :key="area.area_id" class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ area.area_nombre }}</td>
+                                    <td class="px-6 py-4 text-center">
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                            :class="getUtilizacionClass(area.utilizacion_capacidad)">
+                                            {{ area.utilizacion_capacidad }}%
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                            :class="getInasistenciaClass(area.tasa_inasistencia)">
+                                            {{ area.tasa_inasistencia }}%
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-center text-sm text-gray-700">{{ area.lead_time }} días
+                                    </td>
+                                    <td class="px-6 py-4 text-center text-sm font-semibold text-gray-700">{{
+                                        area.detalles.total_citas }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div v-if="!indicadorLoading && !indicadores"
+                    class="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
+                    <PresentationChartLineIcon class="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">Selecciona un período</h3>
+                    <p class="text-gray-500">Elige las fechas y haz clic en "Calcular Indicadores" para ver las métricas
+                        de tu tesis.</p>
                 </div>
             </div>
         </div>
@@ -272,20 +432,34 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick, watch } from 'vue';
 import * as d3 from 'd3';
+import areaService from '../services/areaService';
+import indicadorService, { type IndicadoresResponse, type DatosArea } from '../services/indicadorService';
 import {
     ChartBarIcon,
-    DocumentTextIcon,
-    ArrowTrendingUpIcon,
-    CheckCircleIcon,
-    ArrowTrendingDownIcon,
     FunnelIcon,
     ChartPieIcon,
-    StarIcon,
-    ClipboardDocumentListIcon
+    ClockIcon,
+    BuildingOfficeIcon,
+    PresentationChartLineIcon,
+    CalendarIcon,
+    CheckCircleIcon,
+    XCircleIcon,
+    TableCellsIcon,
+    DocumentTextIcon
 } from '@heroicons/vue/24/outline';
+import { UserMinusIcon } from '@heroicons/vue/24/solid';
 
+interface Area {
+    id: number;
+    nombre: string;
+}
+
+// Tab activo
+const activeTab = ref<'estadisticas' | 'indicadores'>('estadisticas');
+
+// ==================== Estado para Estadísticas Generales ====================
 const filtros = ref({
     fechaInicio: new Date().toISOString().split('T')[0],
     fechaFin: new Date().toISOString().split('T')[0],
@@ -293,55 +467,134 @@ const filtros = ref({
 });
 
 const stats = ref({
-    totalCitas: 450,
+    totalCitas: 340,
     tasaAsistencia: 85,
     cancelaciones: 24
 });
 
-const citasPorMes = ref([
-    { nombre: 'Ene', cantidad: 120, porcentaje: 40 },
-    { nombre: 'Feb', cantidad: 145, porcentaje: 55 },
-    { nombre: 'Mar', cantidad: 135, porcentaje: 50 },
-    { nombre: 'Abr', cantidad: 160, porcentaje: 70 },
-    { nombre: 'May', cantidad: 180, porcentaje: 85 },
-    { nombre: 'Jun', cantidad: 155, porcentaje: 65 }
-]);
-
-const especialidadesTop = ref([
-    { nombre: 'Medicina General', cantidad: 180, porcentaje: 80 },
-    { nombre: 'Odontología', cantidad: 120, porcentaje: 55 },
-    { nombre: 'Pediatría', cantidad: 90, porcentaje: 40 },
-    { nombre: 'Ginecología', cantidad: 60, porcentaje: 25 }
-]);
-
-const detalleReporte = ref([
-    { fecha: '2024-06-01', especialidad: 'Medicina General', total: 25, atendidas: 22, canceladas: 3 },
-    { fecha: '2024-06-01', especialidad: 'Odontología', total: 15, atendidas: 14, canceladas: 1 },
-    { fecha: '2024-06-02', especialidad: 'Pediatría', total: 20, atendidas: 18, canceladas: 2 },
-    { fecha: '2024-06-02', especialidad: 'Ginecología', total: 10, atendidas: 9, canceladas: 1 },
-    { fecha: '2024-06-03', especialidad: 'Medicina General', total: 22, atendidas: 20, canceladas: 2 }
-]);
-
-const generarReporte = () => {
-    console.log('Generando reporte con filtros:', filtros.value);
-    // Aquí iría la lógica para llamar al backend
-};
-
-const exportarPDF = () => {
-    console.log('Exportando a PDF...');
-    alert('Función de exportación a PDF simulada');
-};
-
 const chartContainer = ref<HTMLElement | null>(null);
 const pieChartContainer = ref<HTMLElement | null>(null);
 
+// Datos de ejemplo para especialidades
+const especialidades = ref([
+    { nombre: 'Medicina General', cantidad: 120, porcentaje: 35 },
+    { nombre: 'Odontología', cantidad: 85, porcentaje: 25 },
+    { nombre: 'Psicología', cantidad: 60, porcentaje: 18 },
+    { nombre: 'Nutrición', cantidad: 45, porcentaje: 13 },
+    { nombre: 'Obstetricia', cantidad: 30, porcentaje: 9 }
+]);
+
+// Datos de ejemplo para tabla detallada
+const citasDetalle = ref<{ id: number; fecha: string; paciente: string; especialidad: string; estado: string }[]>([]);
+
+// ==================== Estado para Indicadores de Tesis ====================
+const indicadorFiltros = ref<{
+    fechaInicio: string;
+    fechaFin: string;
+    areaId: number | null;
+}>({
+    fechaInicio: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0] as string,
+    fechaFin: new Date().toISOString().split('T')[0] as string,
+    areaId: null
+});
+
+const indicadorLoading = ref(false);
+const indicadores = ref<IndicadoresResponse['indicadores'] | null>(null);
+const indicadorEstadisticas = ref<IndicadoresResponse['estadisticas_adicionales'] | null>(null);
+const areasData = ref<DatosArea[]>([]);
+
+// ==================== Estado compartido ====================
+const areas = ref<Area[]>([]);
+
+// ==================== Métodos ====================
+const cargarAreas = async () => {
+    try {
+        const response = await areaService.getAreas();
+        areas.value = response.data;
+    } catch (error) {
+        console.error('Error al cargar áreas:', error);
+    }
+};
+
+const generarReporte = () => {
+    console.log('Generando reporte con filtros:', filtros.value);
+    // TODO: Implementar lógica de reporte
+};
+
+const exportarPDF = () => {
+    console.log('Exportando PDF...');
+    // TODO: Implementar exportación a PDF
+};
+
+const getEstadoClass = (estado: string) => {
+    const classes: Record<string, string> = {
+        'pendiente': 'bg-yellow-100 text-yellow-800',
+        'confirmada': 'bg-blue-100 text-blue-800',
+        'atendida': 'bg-green-100 text-green-800',
+        'cancelada': 'bg-red-100 text-red-800',
+        'no_asistio': 'bg-gray-100 text-gray-800'
+    };
+    return classes[estado] || 'bg-gray-100 text-gray-800';
+};
+
+const cargarIndicadores = async () => {
+    indicadorLoading.value = true;
+    try {
+        const params = {
+            fecha_inicio: indicadorFiltros.value.fechaInicio,
+            fecha_fin: indicadorFiltros.value.fechaFin,
+            ...(indicadorFiltros.value.areaId && { area_id: indicadorFiltros.value.areaId })
+        };
+
+        // Cargar indicadores principales
+        const response = await indicadorService.getIndicadores(params);
+        if (response.data.success) {
+            indicadores.value = response.data.indicadores;
+            indicadorEstadisticas.value = response.data.estadisticas_adicionales;
+        }
+
+        // Cargar comparativo por área (solo si no hay filtro de área)
+        if (!indicadorFiltros.value.areaId) {
+            const areasResponse = await indicadorService.getPorArea(params);
+            if (areasResponse.data.success) {
+                areasData.value = areasResponse.data.areas;
+            }
+        } else {
+            areasData.value = [];
+        }
+
+    } catch (error) {
+        console.error('Error al cargar indicadores:', error);
+    } finally {
+        indicadorLoading.value = false;
+    }
+};
+
+const getUtilizacionClass = (valor: number) => {
+    if (valor >= 80) return 'bg-green-100 text-green-800';
+    if (valor >= 50) return 'bg-yellow-100 text-yellow-800';
+    return 'bg-red-100 text-red-800';
+};
+
+const getInasistenciaClass = (valor: number) => {
+    if (valor <= 5) return 'bg-green-100 text-green-800';
+    if (valor <= 15) return 'bg-yellow-100 text-yellow-800';
+    return 'bg-red-100 text-red-800';
+};
+
 const renderChart = () => {
     if (!chartContainer.value) return;
-
-    // Clear previous chart
     d3.select(chartContainer.value).selectAll('*').remove();
 
-    const data = citasPorMes.value;
+    const data = [
+        { nombre: 'Ene', cantidad: 120 },
+        { nombre: 'Feb', cantidad: 145 },
+        { nombre: 'Mar', cantidad: 135 },
+        { nombre: 'Abr', cantidad: 160 },
+        { nombre: 'May', cantidad: 180 },
+        { nombre: 'Jun', cantidad: 155 }
+    ];
+
     const margin = { top: 20, right: 0, bottom: 30, left: 40 };
     const width = chartContainer.value.clientWidth - margin.left - margin.right;
     const height = chartContainer.value.clientHeight - margin.top - margin.bottom;
@@ -353,27 +606,12 @@ const renderChart = () => {
         .append('g')
         .attr('transform', `translate(${margin.left},${margin.top})`);
 
-    // X axis
-    const x = d3.scaleBand()
-        .range([0, width])
-        .domain(data.map(d => d.nombre))
-        .padding(0.2);
+    const x = d3.scaleBand().range([0, width]).domain(data.map(d => d.nombre)).padding(0.2);
+    const y = d3.scaleLinear().domain([0, 200]).range([height, 0]);
 
-    svg.append('g')
-        .attr('transform', `translate(0,${height})`)
-        .call(d3.axisBottom(x))
-        .selectAll("text")
-        .style("text-anchor", "middle");
+    svg.append('g').attr('transform', `translate(0,${height})`).call(d3.axisBottom(x));
+    svg.append('g').call(d3.axisLeft(y));
 
-    // Y axis
-    const y = d3.scaleLinear()
-        .domain([0, 200]) // Fixed domain based on data or make it dynamic
-        .range([height, 0]);
-
-    svg.append('g')
-        .call(d3.axisLeft(y));
-
-    // Bars
     svg.selectAll("mybar")
         .data(data)
         .join("rect")
@@ -381,89 +619,92 @@ const renderChart = () => {
         .attr("y", d => y(d.cantidad))
         .attr("width", x.bandwidth())
         .attr("height", d => height - y(d.cantidad))
-        .attr("fill", "#5eead4") // teal-300
-        .on("mouseover", function (_event, d) {
-            d3.select(this).attr("fill", "#2dd4bf"); // teal-400
-
-            // Add tooltip logic if needed, or simple text on top
-            svg.append("text")
-                .attr("id", "tooltip-" + d.nombre)
-                .attr("x", (x(d.nombre) as number) + x.bandwidth() / 2)
-                .attr("y", y(d.cantidad) - 5)
-                .attr("text-anchor", "middle")
-                .style("font-size", "12px")
-                .style("font-weight", "bold")
-                .text(d.cantidad);
-        })
-        .on("mouseout", function (_event, d) {
-            d3.select(this).attr("fill", "#5eead4");
-            d3.select("#tooltip-" + d.nombre).remove();
-        });
+        .attr("fill", "#5eead4");
 };
 
 const renderPieChart = () => {
     if (!pieChartContainer.value) return;
-
-    // Clear previous chart
     d3.select(pieChartContainer.value).selectAll('*').remove();
 
-    const width = pieChartContainer.value.clientWidth;
-    const height = pieChartContainer.value.clientHeight;
-    const margin = 10; // Add margin to prevent clipping
-    const radius = (Math.min(width, height) / 2) - margin;
+    const containerWidth = pieChartContainer.value.clientWidth;
+    const containerHeight = pieChartContainer.value.clientHeight;
+
+    // Si el contenedor no tiene dimensiones, no renderizar
+    if (containerWidth === 0 || containerHeight === 0) return;
+
+    // Calcular dimensiones para el gráfico y la leyenda
+    const chartHeight = containerHeight * 0.75;
+    const radius = Math.min(containerWidth, chartHeight) / 2 - 10;
 
     const svg = d3.select(pieChartContainer.value)
         .append('svg')
-        .attr('width', width)
-        .attr('height', height)
-        .append('g')
-        .attr('transform', `translate(${width / 2},${height / 2})`);
+        .attr('width', containerWidth)
+        .attr('height', containerHeight);
 
+    // Grupo para el gráfico de dona
+    const chartGroup = svg.append('g')
+        .attr('transform', `translate(${containerWidth / 2},${chartHeight / 2})`);
+
+    // Datos para estado de citas
     const data = [
-        { label: 'Atendidos', value: stats.value.totalCitas - stats.value.cancelaciones },
-        { label: 'Cancelados', value: stats.value.cancelaciones }
+        { label: 'Atendidas', value: 280, color: '#10b981' },
+        { label: 'Canceladas', value: 24, color: '#ef4444' },
+        { label: 'No Asistió', value: 18, color: '#f59e0b' },
+        { label: 'Pendientes', value: 18, color: '#6366f1' }
     ];
 
-    const color = d3.scaleOrdinal()
-        .domain(['Atendidos', 'Cancelados'])
-        .range(['#2dd4bf', '#ef4444']); // teal-400, red-500
+    const pie = d3.pie<any>().value(d => d.value).sort(null);
+    const arc = d3.arc<any>().innerRadius(radius * 0.5).outerRadius(radius);
 
-    const pie = d3.pie<any>().value(d => d.value);
-    const data_ready = pie(data);
+    const arcs = chartGroup.selectAll('arc')
+        .data(pie(data))
+        .join('g')
+        .attr('class', 'arc');
 
-    const arc = d3.arc()
-        .innerRadius(0)
-        .outerRadius(radius);
-
-    svg.selectAll('whatever')
-        .data(data_ready)
-        .join('path')
-        .attr('d', arc as any)
-        .attr('fill', d => color(d.data.label) as string)
+    arcs.append('path')
+        .attr('d', arc)
+        .attr('fill', d => d.data.color)
         .attr("stroke", "white")
-        .style("stroke-width", "2px")
-        .style("opacity", 0.9)
-        .on("mouseover", function (_event, _d) {
-            d3.select(this).style("opacity", 1);
-            d3.select(this).style("transform", "scale(1.05)");
-        })
-        .on("mouseout", function (_event, _d) {
-            d3.select(this).style("opacity", 0.9);
-            d3.select(this).style("transform", "scale(1)");
-        });
+        .style("stroke-width", "2px");
+
+    // Leyenda horizontal debajo del gráfico
+    const legendGroup = svg.append('g')
+        .attr('transform', `translate(0,${chartHeight + 10})`);
+
+    const legendItemWidth = containerWidth / data.length;
+
+    const legend = legendGroup.selectAll('.legend')
+        .data(data)
+        .join('g')
+        .attr('class', 'legend')
+        .attr('transform', (_d, i) => `translate(${i * legendItemWidth + legendItemWidth / 2 - 40},0)`);
+
+    legend.append('rect')
+        .attr('width', 12)
+        .attr('height', 12)
+        .attr('rx', 2)
+        .attr('fill', d => d.color);
+
+    legend.append('text')
+        .attr('x', 16)
+        .attr('y', 10)
+        .style('font-size', '11px')
+        .style('fill', '#374151')
+        .text(d => `${d.label}`);
 };
 
-onMounted(() => {
-    // Wait for container to have dimensions
-    requestAnimationFrame(() => {
-        renderChart();
-        renderPieChart();
-    });
-
-    window.addEventListener('resize', () => {
-        renderChart();
-        renderPieChart();
-    });
+onMounted(async () => {
+    await cargarAreas();
+    await nextTick();
+    renderChart();
+    renderPieChart();
 });
 
+watch(activeTab, async (newTab) => {
+    if (newTab === 'estadisticas') {
+        await nextTick();
+        renderChart();
+        renderPieChart();
+    }
+});
 </script>
