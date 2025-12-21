@@ -201,7 +201,7 @@
                 </div>
 
                 <!-- Distribución por Especialidad -->
-                <div class="bg-white rounded-lg shadow-md p-6">
+                <div v-if="canSeeSpecialtyStats" class="bg-white rounded-lg shadow-md p-6">
                     <div class="flex items-center gap-3 mb-6">
                         <div class="p-2 bg-emerald-100 rounded-lg">
                             <ChartPieIcon class="w-5 h-5 text-emerald-600" />
@@ -268,6 +268,11 @@ const canSeeMedicos = computed(() => {
     return auth.user?.rol_id === 1;
 });
 
+const canSeeSpecialtyStats = computed(() => {
+    // Solo Asistente (Rol 3) puede ver las estadísticas por especialidad
+    return auth.user?.rol_id === 3;
+});
+
 // Computed properties para el saludo personalizado
 const getSaludo = computed(() => {
     const hora = new Date().getHours();
@@ -312,15 +317,23 @@ const citasPorEspecialidad = ref<AppointmentBySpecialty[]>([]);
 const fetchData = async () => {
     isLoading.value = true;
     try {
-        const [statsRes, upcomingRes, specialtyRes] = await Promise.all([
+        const promises: any[] = [
             dashboardService.getStats(),
-            dashboardService.getUpcomingAppointments(),
-            dashboardService.getAppointmentsBySpecialty()
-        ]);
+            dashboardService.getUpcomingAppointments()
+        ];
+
+        if (canSeeSpecialtyStats.value) {
+            promises.push(dashboardService.getAppointmentsBySpecialty());
+        }
+
+        const [statsRes, upcomingRes, specialtyRes] = await Promise.all(promises);
 
         stats.value = statsRes.data;
         proximasCitas.value = upcomingRes.data;
-        citasPorEspecialidad.value = specialtyRes.data;
+        
+        if (specialtyRes) {
+            citasPorEspecialidad.value = specialtyRes.data;
+        }
     } catch (error) {
         console.error("Error cargando dashboard:", error);
     } finally {

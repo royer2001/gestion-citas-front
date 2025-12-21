@@ -244,7 +244,8 @@
                                 Referir
                             </button>
                             <!-- No Asistió: solo Admin y Médico -->
-                            <button v-if="props.canUseMedicalActions && cita.estado === 'confirmada'"
+                            <button
+                                v-if="props.canUseMedicalActions && !['atendida', 'cancelada', 'referido', 'no_asistio'].includes(cita.estado)"
                                 @click="$emit('cambiarEstado', cita.id, 'no_asistio')"
                                 class="flex-1 bg-slate-500 hover:bg-slate-600 text-white py-2.5 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-lg hover:shadow-xl">
                                 <XCircleIcon class="w-5 h-5" />

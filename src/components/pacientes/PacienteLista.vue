@@ -22,7 +22,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Edad
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Teléfono</th>
+                            Teléfono/Celular</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Seguro</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -45,7 +45,7 @@
                                     <div
                                         class="h-10 w-10 rounded-full bg-teal-100 flex items-center justify-center mr-3">
                                         <span class="text-teal-600 font-semibold text-sm">{{ paciente.nombres?.[0] || ''
-                                            }}{{
+                                        }}{{
                                                 paciente.apellidoPaterno?.[0] || paciente.apellido_paterno?.[0] || ''
                                             }}</span>
                                     </div>

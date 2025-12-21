@@ -3,7 +3,7 @@
         <form @submit.prevent="onSubmit" class="space-y-4">
 
             <!-- Sección 1: Búsqueda por DNI -->
-            <div class="bg-white rounded-xl shadow-md p-5">
+            <div id="registro-paciente-top" class="bg-white rounded-xl shadow-md p-5">
                 <div class="flex items-center gap-3 mb-4">
                     <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                         <MagnifyingGlassIcon class="w-5 h-5 text-blue-600" />
@@ -15,7 +15,7 @@
                 </div>
                 <div class="flex gap-2">
                     <input type="text" id="dni" v-model="dni" v-bind="dniAttrs" placeholder="Ingrese DNI (8 dígitos)"
-                        maxlength="8"
+                        maxlength="8" @keyup.enter="buscarPorDNI"
                         class="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                         :class="{ 'border-red-500': errors.dni, 'border-green-500': !errors.dni && dni }" />
                     <button type="button" @click="buscarPorDNI" :disabled="!dni || dni.length !== 8 || isSearching"
@@ -146,7 +146,7 @@
                             </div>
                             <!-- Teléfono -->
                             <div>
-                                <label class="block text-xs font-medium text-gray-600 mb-1">Teléfono <span
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Teléfono / Celular <span
                                         class="text-red-500">*</span></label>
                                 <input type="tel" id="telefono" v-model="telefono" v-bind="telefonoAttrs"
                                     placeholder="999999999" maxlength="9"
@@ -352,10 +352,19 @@
                             <div>
                                 <label class="block text-xs font-medium text-gray-600 mb-1">DNI Acompañante <span
                                         class="text-red-500">*</span></label>
-                                <input type="text" id="dniAcompanante" v-model="dniAcompanante"
-                                    v-bind="dniAcompananteAttrs" maxlength="8" placeholder="00000000"
-                                    class="w-full px-3 py-2 border rounded-lg text-sm"
-                                    :class="{ 'border-red-500 bg-red-50': errors.dniAcompanante, 'border-gray-300': !errors.dniAcompanante }" />
+                                <div class="flex gap-1">
+                                    <input type="text" id="dniAcompanante" v-model="dniAcompanante"
+                                        v-bind="dniAcompananteAttrs" maxlength="8" placeholder="00000000"
+                                        @keyup.enter="buscarDniAcompanante"
+                                        class="flex-1 px-3 py-2 border rounded-lg text-sm transition focus:ring-2 focus:ring-amber-500"
+                                        :class="{ 'border-red-500 bg-red-50': errors.dniAcompanante, 'border-gray-300': !errors.dniAcompanante }" />
+                                    <button type="button" @click="buscarDniAcompanante"
+                                        :disabled="!dniAcompanante || dniAcompanante.length !== 8 || isSearchingAcompanante"
+                                        class="px-2 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:bg-gray-200 disabled:text-gray-400 transition flex items-center justify-center">
+                                        <ArrowPathIcon v-if="isSearchingAcompanante" class="w-4 h-4 animate-spin" />
+                                        <MagnifyingGlassIcon v-else class="w-4 h-4" />
+                                    </button>
+                                </div>
                                 <span v-if="errors.dniAcompanante" class="text-red-500 text-xs mt-1">{{
                                     errors.dniAcompanante }}</span>
                             </div>
@@ -1109,6 +1118,7 @@ const medicoSeleccionado = ref<Medico | null>(null);
 const isLoadingMedicos = ref(false);
 const isLoadingHorarios = ref(false);
 const isSearching = ref(false);
+const isSearchingAcompanante = ref(false);
 const isSubmitting = ref(false);
 const searchMessage = ref<{ text: string; type: "success" | "error" }>({
     text: "",
@@ -1548,6 +1558,35 @@ const buscarPorDNI = async () => {
     }
 };
 
+const buscarDniAcompanante = async () => {
+    if (!values.dniAcompanante || values.dniAcompanante.length !== 8) return;
+
+    isSearchingAcompanante.value = true;
+    try {
+        const { data } = await pacienteService.buscarPorDNI(values.dniAcompanante);
+        const nombresCompletos = `${data.nombres} ${data.apellido_paterno || data.apellidoPaterno} ${data.apellido_materno || data.apellidoMaterno}`.trim();
+
+        setValues({
+            ...values,
+            nombreAcompanante: nombresCompletos
+        });
+
+        searchMessage.value = {
+            text: `Acompañante ${data.origen === 'reniec' ? 'encontrado' : 'registrado'}: ${nombresCompletos}`,
+            type: "success",
+        };
+    } catch (error) {
+        console.error("Error al buscar DNI de acompañante:", error);
+        searchMessage.value = {
+            text: "No se encontró el DNI del acompañante. Ingrese el nombre manualmente.",
+            type: "error",
+        };
+    } finally {
+        isSearchingAcompanante.value = false;
+        setTimeout(() => { searchMessage.value = { text: "", type: "success" }; }, 5000);
+    }
+};
+
 const onSubmit = handleSubmit(async (values) => {
     if (!horarioSeleccionado.value || !diaSeleccionado.value) {
         alert("Por favor seleccione una fecha y horario para la cita.");
@@ -1663,5 +1702,13 @@ const resetForm = () => {
     pacienteId.value = null;
     searchMessage.value = { text: "", type: "success" };
     recomendacion.value = null;
+
+    // Scroll al inicio (sección Buscar Paciente)
+    const topElement = document.getElementById('registro-paciente-top');
+    if (topElement) {
+        topElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 };
 </script>
