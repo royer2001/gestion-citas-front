@@ -505,7 +505,19 @@
                     </p>
 
                     <!-- Grid de Áreas como tarjetas -->
-                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    <!-- Skeleton Loader para servicios -->
+                    <div v-if="isLoadingAreas" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                        <div v-for="n in 8" :key="n"
+                            class="p-4 rounded-xl border border-gray-200 animate-pulse bg-white">
+                            <div class="flex flex-col items-center">
+                                <div class="w-12 h-12 bg-gray-200 rounded-xl mb-2"></div>
+                                <div class="h-4 bg-gray-200 rounded w-24 mb-1"></div>
+                                <div class="h-3 bg-gray-100 rounded w-32 mt-1"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-else class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                         <div v-for="area in areas" :key="area.id" @click="handleAreaClick(area)" :class="[
                             'relative p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 group',
                             areaSeleccionada?.id === area.id
@@ -631,9 +643,36 @@
                                         'font-bold truncate',
                                         medicoSeleccionado?.id === medico.id ? 'text-blue-800' : 'text-gray-800'
                                     ]">{{ medico.name }}</h4>
-                                    <p class="text-sm text-gray-500 flex items-center gap-1 mt-1">
+                                    <div v-if="medico.disponibilidad">
+                                        <div v-if="medico.disponibilidad.turnos > 0 && medico.disponibilidad.cupos > 0"
+                                            class="flex flex-col gap-0.5 mt-1">
+                                            <div class="text-xs text-emerald-600 flex items-center gap-1 font-bold">
+                                                <CheckCircleIcon class="w-3 h-3" />
+                                                {{ medico.disponibilidad.turnos }} turnos programados
+                                            </div>
+                                            <div class="text-xs text-blue-600 flex items-center gap-1 font-medium pl-4">
+                                                {{ medico.disponibilidad.cupos }} cupos disponibles
+                                            </div>
+                                        </div>
+                                        <div v-else-if="medico.disponibilidad.turnos > 0 && medico.disponibilidad.cupos === 0"
+                                            class="flex flex-col gap-0.5 mt-1">
+                                            <div class="text-xs text-amber-600 flex items-center gap-1 font-bold">
+                                                <ExclamationCircleIcon class="w-3 h-3" />
+                                                Sin cupos libres
+                                            </div>
+                                            <div class="text-xs text-gray-500 pl-4">
+                                                (Turnos llenos)
+                                            </div>
+                                        </div>
+                                        <div v-else
+                                            class="text-xs text-red-500 flex items-center gap-1 mt-1 font-medium">
+                                            <ExclamationCircleIcon class="w-3 h-3" />
+                                            Sin turnos disponibles
+                                        </div>
+                                    </div>
+                                    <p v-else class="text-sm text-gray-500 flex items-center gap-1 mt-1">
                                         <CalendarIcon class="w-3 h-3" />
-                                        Click para ver disponibilidad
+                                        Consultar disponibilidad
                                     </p>
                                 </div>
                                 <ChevronRightIcon :class="[
@@ -923,6 +962,10 @@ import HsDatePicker from '../common/HsDatePicker.vue';
 interface Medico {
     id: number;
     name: string;
+    disponibilidad?: {
+        turnos: number;
+        cupos: number;
+    };
 }
 
 interface Horario {
@@ -1329,13 +1372,18 @@ const calculatedEdad = computed(() => {
     return age >= 0 ? age.toString() : '';
 });
 
+const isLoadingAreas = ref(false);
+
 const fetchAreas = async () => {
+    isLoadingAreas.value = true;
     try {
         const { data } = await api.get('/areas/');
         // Solo mostrar áreas con estado activo
         areas.value = data.filter((area: Area) => area.activo === true);
     } catch (error) {
         console.error("Error al cargar áreas", error);
+    } finally {
+        isLoadingAreas.value = false;
     }
 };
 
@@ -1381,7 +1429,8 @@ const seleccionarArea = async (area: Area) => {
         const { data } = await api.get(`/auth/medicos?area_id=${area.id}`);
         medicosDisponibles.value = data.map((medico: any) => ({
             id: medico.id,
-            name: medico.nombres_completos
+            name: medico.nombres_completos,
+            disponibilidad: medico.disponibilidad
         }));
     } catch (error) {
         console.error('Error al cargar médicos', error);
