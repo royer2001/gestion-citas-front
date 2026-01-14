@@ -25,46 +25,63 @@
 
                 <!-- Contenido del modal -->
                 <div class="p-6 overflow-y-auto flex-1">
-                    <form @submit.prevent="guardar" class="space-y-4">
+                    <form @submit="onSubmit" class="space-y-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
                                     Nombre Completo <span class="text-red-500">*</span>
                                 </label>
-                                <input v-model="form.name" type="text" required
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                                    placeholder="Juan Pérez" />
+                                <input v-model="name" v-bind="nameAttrs" type="text"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent uppercase"
+                                    :class="{ 'border-red-500': errors.name }" placeholder="JUAN PÉREZ"
+                                    @input="name = ($event.target as HTMLInputElement).value.toUpperCase()" />
+                                <span v-if="errors.name" class="text-red-500 text-xs mt-1">{{ errors.name }}</span>
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Usuario <span class="text-red-500">*</span>
+                                    Usuario (DNI) <span class="text-red-500">*</span>
                                 </label>
-                                <input v-model="form.username" type="text" required
+                                <input v-model="username" v-bind="usernameAttrs" type="text" maxlength="8"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                                    placeholder="jperez" />
+                                    :class="{ 'border-red-500': errors.username }" placeholder="12345678" />
+                                <span v-if="errors.username" class="text-red-500 text-xs mt-1">{{ errors.username
+                                }}</span>
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Contraseña <span class="text-red-500">*</span>
+                                    Contraseña <span v-if="!esEdicion" class="text-red-500">*</span>
                                 </label>
-                                <input v-model="form.password" type="password" :required="!esEdicion"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                                    :placeholder="esEdicion ? 'Dejar vacío para mantener' : '********'" />
+                                <div class="relative">
+                                    <input v-model="password" v-bind="passwordAttrs"
+                                        :type="showPassword ? 'text' : 'password'"
+                                        class="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                                        :class="{ 'border-red-500': errors.password }"
+                                        :placeholder="esEdicion ? 'Dejar vacío para mantener' : '********'" />
+                                    <button type="button" @click="showPassword = !showPassword"
+                                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none">
+                                        <EyeSlashIcon v-if="showPassword" class="w-5 h-5" />
+                                        <EyeIcon v-else class="w-5 h-5" />
+                                    </button>
+                                </div>
+                                <span v-if="errors.password" class="text-red-500 text-xs mt-1">{{ errors.password
+                                }}</span>
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
                                     Rol <span class="text-red-500">*</span>
                                 </label>
-                                <select v-model="form.role" required
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white">
+                                <select v-model="role" v-bind="roleAttrs"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white"
+                                    :class="{ 'border-red-500': errors.role }">
                                     <option value="">Seleccionar rol</option>
                                     <option value="admin">Administrador</option>
                                     <option value="profesional">Profesional</option>
                                     <option value="asistente">Asistente Técnico</option>
                                 </select>
+                                <span v-if="errors.role" class="text-red-500 text-xs mt-1">{{ errors.role }}</span>
                             </div>
                         </div>
 
@@ -99,13 +116,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { useForm } from 'vee-validate'
+import * as yup from 'yup'
 import {
     XMarkIcon,
     CheckIcon,
     ArrowPathIcon,
-    ExclamationCircleIcon
+    ExclamationCircleIcon,
+    EyeIcon,
+    EyeSlashIcon
 } from '@heroicons/vue/24/outline'
+
+const showPassword = ref(false)
 
 interface UserFormData {
     id: number
@@ -133,33 +156,94 @@ const emit = defineEmits<{
     (e: 'save', data: UserFormData): void
 }>()
 
-const form = ref<UserFormData>({
-    id: 0,
-    name: '',
-    username: '',
-    password: '',
-    role: ''
+// Esquema de validación con yup
+const schema = computed(() => yup.object({
+    name: yup.string()
+        .required('El nombre completo es obligatorio')
+        .min(3, 'El nombre debe tener al menos 3 caracteres')
+        .matches(/^[A-ZÁÉÍÓÚÑ\s]+$/, 'El nombre debe estar en mayúsculas'),
+    username: yup.string()
+        .required('El usuario (DNI) es obligatorio')
+        .matches(/^\d{8}$/, 'El DNI debe contener exactamente 8 dígitos numéricos'),
+    password: props.esEdicion
+        ? yup.string().nullable()
+        : yup.string()
+            .required('La contraseña es obligatoria')
+            .min(6, 'La contraseña debe tener al menos 6 caracteres'),
+    role: yup.string()
+        .required('Debe seleccionar un rol')
+        .oneOf(['admin', 'profesional', 'asistente'], 'Seleccione un rol válido')
+}))
+
+const { handleSubmit, resetForm, errors, defineField } = useForm({
+    validationSchema: schema,
+    initialValues: {
+        name: '',
+        username: '',
+        password: '',
+        role: ''
+    },
+    validateOnMount: false
 })
+
+// Configuración para validar solo cuando el campo pierde el foco
+const fieldConfig = {
+    validateOnModelUpdate: false,
+    validateOnBlur: true
+}
+
+const [name, nameAttrs] = defineField('name', fieldConfig)
+const [username, usernameAttrs] = defineField('username', fieldConfig)
+const [password, passwordAttrs] = defineField('password', fieldConfig)
+const [role, roleAttrs] = defineField('role', fieldConfig)
 
 watch(() => props.visible, (newVal) => {
     if (newVal && props.userData) {
-        form.value = { ...props.userData }
+        // Modo edición: cargar datos del usuario
+        resetForm({
+            values: {
+                name: props.userData.name,
+                username: props.userData.username,
+                password: '',
+                role: props.userData.role
+            }
+        })
     } else if (newVal && !props.esEdicion) {
-        form.value = {
-            id: 0,
+        // Modo nuevo: limpiar formulario y errores
+        resetForm({
+            values: {
+                name: '',
+                username: '',
+                password: '',
+                role: ''
+            }
+        })
+    }
+    // Resetear estado de mostrar contraseña
+    showPassword.value = false
+})
+
+const cerrar = () => {
+    emit('close')
+    resetForm({
+        values: {
             name: '',
             username: '',
             password: '',
             role: ''
         }
+    })
+    showPassword.value = false
+}
+
+const onSubmit = handleSubmit((values) => {
+    const formData: UserFormData = {
+        id: props.userData?.id || 0,
+        name: values.name,
+        username: values.username,
+        password: values.password || '',
+        role: values.role as 'admin' | 'profesional' | 'asistente' | ''
     }
+    emit('save', formData)
 })
-
-const cerrar = () => {
-    emit('close')
-}
-
-const guardar = () => {
-    emit('save', { ...form.value })
-}
 </script>

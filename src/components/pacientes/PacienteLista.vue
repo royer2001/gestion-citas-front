@@ -1,8 +1,23 @@
 <template>
     <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-        <!-- Buscador y Filtros -->
-        <div class="p-6 border-b border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4">
-            <h2 class="text-lg font-semibold text-gray-800">Directorio de Pacientes</h2>
+        <!-- Header con estilo similar a Historial de Citas -->
+        <div class="bg-gradient-to-r from-teal-600 to-teal-700 px-6 py-4 text-white">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h2 class="text-xl font-bold">Directorio de Pacientes</h2>
+                    <p class="text-teal-100 text-sm mt-1">Gestiona y consulta la información de los pacientes</p>
+                </div>
+                <!-- Botón Nuevo Paciente: solo Admin y Asistente -->
+                <button v-if="canEditPatients" @click="abrirModalRegistro"
+                    class="flex items-center gap-2 px-5 py-2.5 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-all font-medium text-sm border border-white/30">
+                    <UserPlusIcon class="w-5 h-5" />
+                    <span>Nuevo Paciente</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Buscador -->
+        <div class="p-4 border-b border-gray-200 bg-gray-50">
             <div class="relative w-full md:w-96">
                 <input type="text" v-model="busquedaPaciente" placeholder="Buscar por DNI o Nombre..."
                     class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent">
@@ -45,7 +60,7 @@
                                     <div
                                         class="h-10 w-10 rounded-full bg-teal-100 flex items-center justify-center mr-3">
                                         <span class="text-teal-600 font-semibold text-sm">{{ paciente.nombres?.[0] || ''
-                                        }}{{
+                                            }}{{
                                                 paciente.apellidoPaterno?.[0] || paciente.apellido_paterno?.[0] || ''
                                             }}</span>
                                     </div>
@@ -142,7 +157,8 @@
     <ModalHistorialPaciente :show="showHistorialModal" :paciente="pacienteSeleccionado"
         @close="showHistorialModal = false" />
 
-    <ModalEditarPaciente :show="showEditModal" :paciente="pacienteSeleccionado" @close="showEditModal = false"
+    <!-- Modal unificado para Registrar y Editar pacientes -->
+    <ModalFormPaciente :show="showFormModal" :paciente="pacienteSeleccionado" @close="showFormModal = false"
         @saved="onPacienteGuardado" />
 </template>
 
@@ -150,7 +166,7 @@
 import { ref, watch, onMounted, computed } from "vue";
 import pacienteService, { type Paciente } from "../../services/pacienteService";
 import ModalHistorialPaciente from "./ModalHistorialPaciente.vue";
-import ModalEditarPaciente from "./ModalEditarPaciente.vue";
+import ModalFormPaciente from "./ModalFormPaciente.vue";
 import { useAuthStore } from "../../store/auth";
 import {
     MagnifyingGlassIcon,
@@ -158,7 +174,8 @@ import {
     ClockIcon,
     PencilIcon,
     ChevronLeftIcon,
-    ChevronRightIcon
+    ChevronRightIcon,
+    UserPlusIcon
 } from '@heroicons/vue/24/outline'
 
 // Auth store para permisos
@@ -181,7 +198,7 @@ const isLoading = ref(false);
 
 // Estado de modales
 const showHistorialModal = ref(false);
-const showEditModal = ref(false);
+const showFormModal = ref(false);
 const pacienteSeleccionado = ref<Paciente | null>(null);
 
 // Computed para mostrar máximo 5 páginas en la paginación
@@ -231,7 +248,12 @@ const verHistorial = (paciente: Paciente) => {
 
 const editarPaciente = (paciente: Paciente) => {
     pacienteSeleccionado.value = paciente;
-    showEditModal.value = true;
+    showFormModal.value = true;
+};
+
+const abrirModalRegistro = () => {
+    pacienteSeleccionado.value = null;
+    showFormModal.value = true;
 };
 
 const onPacienteGuardado = () => {
