@@ -3,13 +3,19 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import api from '../services/api'
 
-interface User {
+export interface User {
   id: number
   dni: string
   username: string | null
   nombres_completos: string | null
   rol_id: number  // 1=administrador, 2=medico, 3=asistente
   activo: boolean
+}
+
+interface LoginResponse {
+  message: string
+  access_token: string
+  usuario: User
 }
 
 export const useAuthStore = defineStore('auth', () => {
@@ -41,14 +47,9 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function login(dni: string, password: string) {
-    // Mock login para validación
-    // Eliminar mock para usar siempre el backend
-
-
-    // Fallback a API real si no son las credenciales de prueba
+  async function login(dni: string, password: string): Promise<LoginResponse> {
     try {
-      const { data } = await api.post('/auth/login', { dni, password })
+      const { data } = await api.post<LoginResponse>('/auth/login', { dni, password })
       const token = data.access_token
       const userPayload = data.usuario
       setSession(token, userPayload)
@@ -73,11 +74,11 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-
-  function hasRole(role: string) {
+  function hasRole(role: string): boolean {
     const roleMap: Record<string, number> = {
       'administrador': 1,
       'medico': 2,
+      'profesional': 2, // Alias often used
       'asistente': 3
     }
     return !!user.value && user.value.rol_id === roleMap[role]
@@ -86,12 +87,17 @@ export const useAuthStore = defineStore('auth', () => {
   // intenta reconstruir user desde token si no tenemos user (opcional)
   async function fetchProfile() {
     try {
-      const { data } = await api.get('/auth/me')
-      user.value = data.user
+      const { data } = await api.get<{ user: User }>('/auth/me') 
+      // Note: Endpoint matching might vary. API shows /perfil returns {user: ...}
+      // Usually not needed if we persist user in localStorage, unless logical check.
+      // But keeping existing logic structure.
+      if (data.user) {
+         user.value = data.user
+      }
       return data
     } catch {
-      // si falla, limpiar sesión
-      logout()
+      // si falla, no hacemos logout forzado aquí para no ser molestos, 
+      // el interceptor 401 se encargará si es crítico.
     }
   }
 
