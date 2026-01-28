@@ -135,7 +135,7 @@
                                 </div>
                                 <div>
                                     <p class="text-xs text-gray-500">Estado</p>
-                                    <span :class="getEstadoClass(cita.estado)">
+                                    <span :class="getEstadoClass(cita)">
                                         {{ formatEstado(cita.estado) }}
                                     </span>
                                 </div>
@@ -325,6 +325,12 @@ interface Cita {
     telefono_acompanante: string | null
     paciente?: Paciente
     horario?: Horario
+    estado_info?: {
+        id: number
+        nombre: string
+        descripcion: string
+        color: string
+    }
 }
 
 interface Props {
@@ -376,19 +382,23 @@ const formatEstado = (estado: string): string => {
         referido: 'Referido',
         no_asistio: 'No Asistió'
     }
-    return estados[estado] || estado
+    return estados[estado] || (estado.charAt(0).toUpperCase() + estado.slice(1))
 }
 
-const getEstadoClass = (estado: string): string => {
-    const classes: Record<string, string> = {
-        pendiente: 'px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800',
-        confirmada: 'px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800',
-        atendida: 'px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800',
-        cancelada: 'px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800',
-        referido: 'px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800',
-        no_asistio: 'px-2 py-1 text-xs font-semibold rounded-full bg-slate-100 text-slate-800'
+const getEstadoClass = (cita: Cita): string => {
+    const color = cita.estado_info?.color || 'gray'
+    const colorMap: Record<string, string> = {
+        blue: 'px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800',
+        green: 'px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800',
+        teal: 'px-2 py-1 text-xs font-semibold rounded-full bg-teal-100 text-teal-800',
+        red: 'px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800',
+        gray: 'px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800',
+        purple: 'px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800',
+        orange: 'px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800',
+        yellow: 'px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800',
+        slate: 'px-2 py-1 text-xs font-semibold rounded-full bg-slate-100 text-slate-800'
     }
-    return classes[estado] || 'px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800'
+    return colorMap[color] || 'px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800'
 }
 
 const getNombreCompleto = (p: Paciente | undefined) => {

@@ -30,15 +30,20 @@ const getDia = (fechaStr: string) => {
     return parts[2]; // Retorna el día tal cual del string "2024-12-08" -> "08"
 };
 
-const getEstadoClass = (estado: string) => {
-    const classes: Record<string, string> = {
-        'Pendiente': 'px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800',
-        'Confirmada': 'px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800',
-        'Atendida': 'px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800',
-        'Cancelada': 'px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800',
-        'Referido': 'px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800'
-    };
-    return classes[estado] || 'px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800';
+const getEstadoClass = (_estado: string, color?: string) => {
+    const colorMap: Record<string, string> = {
+        blue: 'bg-blue-100 text-blue-800',
+        green: 'bg-green-100 text-green-800',
+        teal: 'bg-teal-100 text-teal-800',
+        red: 'bg-red-100 text-red-800',
+        gray: 'bg-gray-100 text-gray-800',
+        purple: 'bg-purple-100 text-purple-800',
+        orange: 'bg-orange-100 text-orange-800',
+        yellow: 'bg-yellow-100 text-yellow-800',
+        slate: 'bg-slate-100 text-slate-800'
+    }
+    const baseClass = (color && colorMap[color]) ? colorMap[color] : 'bg-gray-100 text-gray-800'
+    return `px-3 py-1 rounded-full text-xs font-medium ${baseClass}`
 };
 </script>
 
@@ -86,7 +91,7 @@ const getEstadoClass = (estado: string) => {
                             </p>
                         </div>
                     </div>
-                    <span :class="getEstadoClass(cita.estado)">
+                    <span :class="getEstadoClass(cita.estado, cita.color_estado)">
                         {{ cita.estado }}
                     </span>
                 </div>

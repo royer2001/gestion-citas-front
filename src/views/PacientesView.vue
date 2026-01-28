@@ -1,21 +1,21 @@
 <template>
   <div class="max-w-7xl mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold text-gray-800 mb-8 text-center">
-      Gestión de Pacientes
-    </h1>
 
-    <!-- Tabs: solo visibles si el usuario puede registrar pacientes -->
-    <div v-if="canRegisterPatients" class="flex justify-center mb-8">
-      <div class="bg-gray-100 p-1 rounded-lg inline-flex">
-        <button @click="activeTab = 'registro'"
-          :class="['px-6 py-2 rounded-md text-sm font-medium transition-all', activeTab === 'registro' ? 'bg-white text-teal-600 shadow-sm' : 'text-gray-500 hover:text-gray-700']">
-          Nuevo Registro
-        </button>
-        <button @click="activeTab = 'lista'"
-          :class="['px-6 py-2 rounded-md text-sm font-medium transition-all', activeTab === 'lista' ? 'bg-white text-teal-600 shadow-sm' : 'text-gray-500 hover:text-gray-700']">
-          Listado de Pacientes
-        </button>
-      </div>
+    <!-- Tabs: estilo border-bottom -->
+    <div v-if="canRegisterPatients" class="flex items-center gap-6 border-b border-gray-200 mb-8">
+      <button @click="activeTab = 'registro'"
+        class="flex items-center gap-2 pb-3 text-sm font-medium transition-colors relative"
+        :class="activeTab === 'registro' ? 'text-emerald-600 border-b-2 border-emerald-600' : 'text-gray-500 hover:text-gray-700 border-b-2 border-transparent'">
+        <UserPlusIcon class="w-5 h-5" />
+        Nuevo Registro
+      </button>
+
+      <button @click="activeTab = 'lista'"
+        class="flex items-center gap-2 pb-3 text-sm font-medium transition-colors relative"
+        :class="activeTab === 'lista' ? 'text-emerald-600 border-b-2 border-emerald-600' : 'text-gray-500 hover:text-gray-700 border-b-2 border-transparent'">
+        <QueueListIcon class="w-5 h-5" />
+        Listado de Pacientes
+      </button>
     </div>
 
     <!-- Contenido con Transición -->
@@ -37,6 +37,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
+import { UserPlusIcon, QueueListIcon } from "@heroicons/vue/24/outline";
 import PacienteRegistro from "../components/pacientes/PacienteRegistro.vue";
 import PacienteLista from "../components/pacientes/PacienteLista.vue";
 import { useAuthStore } from "../store/auth";

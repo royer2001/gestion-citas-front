@@ -38,7 +38,8 @@
           <div class="ml-3">
             <p class="text-sm text-blue-700">
               <span class="font-medium">Panel del Profesional:</span>
-              El listado muestra las citas <strong>confirmadas</strong> bajo su responsabilidad y aquellas que usted ha procesado (atendidas, referidas o no asistió).
+              El listado muestra las citas <strong>confirmadas</strong> bajo su responsabilidad y aquellas que usted ha
+              procesado (atendidas, referidas o no asistió).
             </p>
           </div>
         </div>
@@ -113,19 +114,9 @@
               class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white transition-all duration-200"
               :class="filtros.estado ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-gray-300'">
               <option value="">Todos los estados</option>
-              <!-- Opciones solo para Admin y Asistente -->
-              <template v-if="!isProfesional">
-                <option value="pendiente">Pendiente</option>
-              </template>
-              <!-- Opciones para todos los roles -->
-              <option value="confirmada">Confirmada</option>
-              <option value="atendida">Atendida</option>
-              <option value="referido">Referido</option>
-              <option value="no_asistio">No Asistió</option>
-              <!-- Cancelada solo para Admin y Asistente -->
-              <template v-if="!isProfesional">
-                <option value="cancelada">Cancelada</option>
-              </template>
+              <option v-for="est in estadosCita" :key="est.id" :value="est.nombre">
+                {{ est.nombre.charAt(0).toUpperCase() + est.nombre.slice(1) }}
+              </option>
             </select>
           </div>
 
@@ -237,7 +228,7 @@
                   </td>
                   <!-- Estado -->
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <span :class="getEstadoClass(cita.estado)">
+                    <span :class="getEstadoClass(cita)">
                       {{ formatEstado(cita.estado) }}
                     </span>
                   </td>
@@ -621,6 +612,7 @@ import Swal from 'sweetalert2'
 import citaService, { type CitaConfirmadaItem } from '../services/citaService'
 import api from '../services/api'
 import medicoService, { type Medico } from '../services/medicoService'
+import catalogoService, { type EstadoCita } from '../services/catalogoService'
 import ModalDetalleCita from '../components/citas/ModalDetalleCita.vue'
 import { useAuthStore } from '../store/auth'
 import {
@@ -696,6 +688,12 @@ interface Cita {
   observaciones?: string
   paciente?: Paciente
   horario?: Horario
+  estado_info?: {
+    id: number
+    nombre: string
+    descripcion: string
+    color: string
+  }
 }
 
 interface Area {
@@ -781,6 +779,9 @@ const modalDetalle = ref<{
   cita: null
 })
 
+// Catálogo de estados
+const estadosCita = ref<EstadoCita[]>([])
+
 // Estado de administración
 const citas = ref<Cita[]>([])
 const areas = ref<Area[]>([])
@@ -840,6 +841,15 @@ const fetchAreas = async () => {
     areas.value = data.filter(a => a.activo)
   } catch (error) {
     console.error('Error al cargar áreas:', error)
+  }
+}
+
+const fetchEstados = async () => {
+  try {
+    const { data } = await catalogoService.getEstadosCita()
+    estadosCita.value = data
+  } catch (error) {
+    console.error('Error al cargar estados:', error)
   }
 }
 
@@ -912,19 +922,24 @@ const formatEstado = (estado: string): string => {
     referido: 'Referido',
     no_asistio: 'No Asistió'
   }
-  return estados[estado] || estado
+  return estados[estado] || (estado.charAt(0).toUpperCase() + estado.slice(1))
 }
 
-const getEstadoClass = (estado: string): string => {
-  const classes: Record<string, string> = {
-    pendiente: 'px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800',
-    confirmada: 'px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800',
-    atendida: 'px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800',
-    cancelada: 'px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800',
-    referido: 'px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800',
-    no_asistio: 'px-2 py-1 text-xs font-semibold rounded-full bg-slate-100 text-slate-800'
+const getEstadoClass = (cita: Cita): string => {
+  const color = cita.estado_info?.color || 'gray'
+  const colorMap: Record<string, string> = {
+    blue: 'bg-blue-100 text-blue-800',
+    green: 'bg-green-100 text-green-800',
+    teal: 'bg-teal-100 text-teal-800',
+    red: 'bg-red-100 text-red-800',
+    gray: 'bg-gray-100 text-gray-800',
+    purple: 'bg-purple-100 text-purple-800',
+    orange: 'bg-orange-100 text-orange-800',
+    yellow: 'bg-yellow-100 text-yellow-800',
+    slate: 'bg-slate-100 text-slate-800'
   }
-  return classes[estado] || 'px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800'
+  const baseClass = colorMap[color] || 'bg-gray-100 text-gray-800'
+  return `px-2 py-1 text-xs font-semibold rounded-full ${baseClass}`
 }
 
 const aplicarFiltros = () => {
@@ -1222,6 +1237,7 @@ const fetchMedicosPorArea = async (areaId: number) => {
 
 onMounted(() => {
   fetchAreas()
+  fetchEstados()
   fetchCitas()
 })
 

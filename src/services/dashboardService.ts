@@ -16,6 +16,7 @@ export interface UpcomingAppointment {
     doctor: string;
     especialidad: string;
     estado: string;
+    color_estado?: string;
 }
 
 export interface AppointmentBySpecialty {

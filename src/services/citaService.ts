@@ -47,6 +47,12 @@ export interface Cita {
     datos_adicionales: Record<string, unknown> | null
     paciente?: Paciente
     horario?: Horario
+    estado_info?: {
+        id: number
+        nombre: string
+        descripcion: string
+        color: string
+    }
 }
 
 // Payload para crear citas

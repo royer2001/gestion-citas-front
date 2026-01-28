@@ -7,7 +7,8 @@
                     <span
                         class="bg-gradient-to-r from-teal-500 via-emerald-500 to-cyan-500 bg-clip-text text-transparent">
                         {{ nombreUsuario }}
-                    </span> 👋
+                    </span>
+                    <HandRaisedIcon class="w-8 h-8 text-amber-400 inline-block ml-2 animate-pulse" />
                 </h1>
                 <p class="text-gray-500 mt-1">
                     {{ fechaCompleta }}
@@ -26,6 +27,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { HandRaisedIcon } from '@heroicons/vue/24/solid';
 
 const props = defineProps<{
     nombreUsuario: string;
