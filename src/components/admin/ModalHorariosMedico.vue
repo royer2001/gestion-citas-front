@@ -71,9 +71,9 @@
 
                             <!-- Días del mes -->
                             <div v-for="(dia, index) in diasDelMes" :key="index" :class="[
-                                'p-2 rounded-lg border min-h-[80px] transition-all',
-                                dia.esDelMes ? 'bg-white border-gray-200' : 'bg-gray-50 border-gray-100',
-                                (dia.turnos?.M || dia.turnos?.T) ? 'border-teal-400 border-2' : ''
+                                'p-2 rounded-lg border-2 min-h-[80px] transition-all',
+                                dia.esDelMes ? 'bg-white' : 'bg-gray-50',
+                                (dia.turnos?.M || dia.turnos?.T) ? 'border-teal-400' : (dia.esDelMes ? 'border-gray-200' : 'border-gray-100')
                             ]">
                                 <div v-if="dia.esDelMes">
                                     <div class="font-bold text-gray-700 mb-2 text-sm">{{ dia.numero }}</div>
@@ -102,10 +102,14 @@
                                     </div>
                                     <!-- Botón para agregar turno mañana si no existe -->
                                     <button v-else @click="abrirCrearHorario(dia.fecha, 'M')"
-                                        class="w-full mb-1 px-2 py-1 border-2 border-dashed border-amber-300 text-amber-500 rounded-lg hover:bg-amber-50 hover:border-amber-400 transition-all flex items-center justify-center gap-1 text-xs group">
-                                        <PlusIcon class="w-3.5 h-3.5" />
-                                        <SunIcon class="w-3 h-3" />
-                                        <span class="hidden group-hover:inline">Mañana</span>
+                                        class="w-full mb-1 h-8 px-2 border-2 border-dashed border-amber-300 text-amber-500 rounded-lg hover:bg-amber-50 hover:border-amber-400 transition-all flex items-center justify-center gap-1 group overflow-hidden">
+                                        <div
+                                            class="flex items-center gap-1 group-hover:scale-110 transition-transform duration-200">
+                                            <PlusIcon class="w-3.5 h-3.5" />
+                                            <SunIcon class="w-3.5 h-3.5" />
+                                        </div>
+                                        <span
+                                            class="max-w-0 opacity-0 group-hover:max-w-xs group-hover:opacity-100 overflow-hidden transition-all duration-300 whitespace-nowrap text-[10px] font-bold uppercase tracking-wider">Mañana</span>
                                     </button>
 
                                     <!-- Turno Tarde -->
@@ -132,10 +136,14 @@
                                     </div>
                                     <!-- Botón para agregar turno tarde si no existe -->
                                     <button v-else @click="abrirCrearHorario(dia.fecha, 'T')"
-                                        class="w-full px-2 py-1 border-2 border-dashed border-indigo-300 text-indigo-500 rounded-lg hover:bg-indigo-50 hover:border-indigo-400 transition-all flex items-center justify-center gap-1 text-xs group">
-                                        <PlusIcon class="w-3.5 h-3.5" />
-                                        <MoonIcon class="w-3 h-3" />
-                                        <span class="hidden group-hover:inline">Tarde</span>
+                                        class="w-full h-8 px-2 border-2 border-dashed border-indigo-300 text-indigo-500 rounded-lg hover:bg-indigo-50 hover:border-indigo-400 transition-all flex items-center justify-center gap-1 group overflow-hidden">
+                                        <div
+                                            class="flex items-center gap-1 group-hover:scale-110 transition-transform duration-200">
+                                            <PlusIcon class="w-3.5 h-3.5" />
+                                            <MoonIcon class="w-3.5 h-3.5" />
+                                        </div>
+                                        <span
+                                            class="max-w-0 opacity-0 group-hover:max-w-xs group-hover:opacity-100 overflow-hidden transition-all duration-300 whitespace-nowrap text-[10px] font-bold uppercase tracking-wider">Tarde</span>
                                     </button>
                                 </div>
                             </div>

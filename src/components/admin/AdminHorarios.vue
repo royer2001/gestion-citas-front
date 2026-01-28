@@ -221,9 +221,10 @@
                 </div>
                 <!-- Días del mes -->
                 <div v-for="(dia, index) in diasDelMes" :key="index" :class="[
-                    'p-2 rounded-lg border min-h-[100px] transition-all',
-                    dia.esDelMes ? 'bg-white border-gray-200 hover:shadow-md' : 'bg-gray-50 border-gray-100',
-                    (dia.turnos?.M || dia.turnos?.T) ? 'border-teal-400 border-2' : ''
+                    'p-2 rounded-lg border-2 min-h-[100px] transition-all',
+                    dia.esDelMes ? 'bg-white' : 'bg-gray-50',
+                    (dia.turnos?.M || dia.turnos?.T) ? 'border-teal-400' : (dia.esDelMes ? 'border-gray-200' : 'border-gray-100'),
+                    dia.esDelMes ? 'hover:shadow-md' : ''
                 ]">
                     <div v-if="dia.esDelMes">
                         <div class="font-bold text-gray-700 mb-2 text-sm">{{ dia.numero }}</div>
