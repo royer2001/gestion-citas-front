@@ -59,6 +59,11 @@ const routes: Array<RouteRecordRaw> = [
         component: Admin,
         meta: { roles: [1, 3] } // Administrador o Asistente
       },
+      {
+        path: "manuales",
+        name: "Manuales",
+        component: () => import("../views/ManualesView.vue")
+      },
       // Ruta para manejar errores 404 o rutas no encontradas dentro del layout
       {
         path: ":pathMatch(.*)*",

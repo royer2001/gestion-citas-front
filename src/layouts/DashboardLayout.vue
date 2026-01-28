@@ -77,6 +77,16 @@
           <span :class="{ 'md:hidden': !sidebarOpen }" class="font-medium whitespace-nowrap">Profesionales</span>
         </router-link>
 
+        <router-link to="/manuales"
+          class="flex items-center gap-4 p-3 rounded-xl transition-all duration-300 group relative overflow-hidden"
+          :class="isActive('/manuales') ?
+            'bg-white text-teal-700 shadow-lg translate-x-2' :
+            'text-teal-100 hover:bg-teal-600 hover:text-white hover:translate-x-1'" @click="mobileMenuOpen = false">
+          <DocumentTextIcon class="w-6 h-6 flex-shrink-0 transition-transform duration-300"
+            :class="{ 'scale-110': isActive('/manuales') }" />
+          <span :class="{ 'md:hidden': !sidebarOpen }" class="font-medium whitespace-nowrap">Manuales</span>
+        </router-link>
+
         <div class="pt-4 mt-4 border-t border-teal-600">
           <!-- Reportes: solo visible para Admin -->
           <router-link v-if="canSeeReportes" to="/reportes"
@@ -223,7 +233,8 @@ import {
   Cog6ToothIcon,
   UserIcon,
   ArrowRightOnRectangleIcon,
-  Bars3Icon
+  Bars3Icon,
+  DocumentTextIcon
   // BellIcon // TODO: Descomentar cuando se implemente notificaciones
 } from '@heroicons/vue/24/outline'
 
@@ -323,6 +334,7 @@ const tituloActual = computed(() => {
     '/pacientes': 'Gestión de Pacientes',
     '/citas': 'Administración de Citas',
     '/medicos': 'Gestión de Profesionales',
+    '/manuales': 'Manuales de Usuario',
     '/reportes': 'Reportes y Estadísticas',
     '/admin': 'Configuración'
   }
@@ -335,6 +347,7 @@ const subtituloActual = computed(() => {
     '/pacientes': 'Registro y gestión de pacientes',
     '/citas': 'Control de citas médicas',
     '/medicos': 'Administración del personal profesional',
+    '/manuales': 'Documentación y guías del sistema',
     '/reportes': 'Análisis y estadísticas del centro',
     '/admin': 'Ajustes del sistema'
   }
