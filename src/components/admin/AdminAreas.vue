@@ -13,52 +13,55 @@
         </div>
 
         <!-- Tabla de Áreas -->
-        <div class="bg-white rounded-lg shadow-lg overflow-hidden relative min-h-[200px]">
+        <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden relative min-h-[200px]">
             <!-- Loader -->
             <div v-if="isLoadingListAreas"
-                class="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
+                class="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10 font-medium">
                 <div class="flex flex-col items-center">
                     <ArrowPathIcon class="w-10 h-10 animate-spin text-teal-600" />
-                    <p class="mt-2 text-gray-500 font-medium">Cargando áreas...</p>
+                    <p class="mt-2 text-gray-500">Cargando áreas...</p>
                 </div>
             </div>
 
             <div class="overflow-x-auto">
                 <table class="w-full">
-                    <thead class="bg-gray-50 border-b border-gray-200">
+                    <thead class="bg-gray-50 border-b border-gray-200 text-gray-600">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">
                                 Nombre del Área
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">
                                 Descripción
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">
                                 Estado
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider">
                                 Acciones
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tbody class="divide-y divide-gray-200">
                         <tr v-for="area in areas" :key="area.id" class="hover:bg-gray-50 transition duration-150">
                             <td class="px-6 py-4">
-                                <div class="text-sm font-medium text-gray-900">{{ area.nombre }}</div>
+                                <div class="text-sm font-semibold text-gray-900">{{ area.nombre }}</div>
                             </td>
                             <td class="px-6 py-4">
-                                <div class="text-sm text-gray-500">{{ area.descripcion || 'Sin descripción' }}</div>
+                                <div class="text-sm text-gray-500 line-clamp-1">{{ area.descripcion || 'Sin descripción'
+                                    }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span :class="[
-                                    'px-3 py-1 text-xs font-semibold rounded-full',
+                                    'px-3 py-1 text-xs font-semibold rounded-full inline-flex items-center gap-1',
                                     area.activo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                                 ]">
+                                    <span v-if="area.activo" class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                                    <span v-else class="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
                                     {{ area.activo ? 'Activo' : 'Inactivo' }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                <div class="flex gap-2">
+                                <div class="flex justify-center gap-1">
                                     <button @click="editarArea(area)"
                                         class="text-blue-600 hover:text-blue-800 transition p-2 rounded-lg hover:bg-blue-50"
                                         title="Editar área">
@@ -72,10 +75,10 @@
                                 </div>
                             </td>
                         </tr>
-                        <tr v-if="areas.length === 0">
-                            <td colspan="4" class="px-6 py-12 text-center text-gray-500">
-                                <BuildingOfficeIcon class="w-16 h-16 mx-auto text-gray-400 mb-2" />
-                                <p>No hay áreas registradas</p>
+                        <tr v-if="areas.length === 0 && !isLoadingListAreas">
+                            <td colspan="4" class="px-6 py-16 text-center text-gray-400">
+                                <BuildingOfficeIcon class="w-16 h-16 mx-auto mb-4 opacity-20" />
+                                <p class="text-lg font-medium">No hay áreas registradas</p>
                             </td>
                         </tr>
                     </tbody>

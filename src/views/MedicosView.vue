@@ -220,7 +220,7 @@
 
     <!-- Modal de Crear/Editar -->
     <ModalFormMedico :visible="modalForm.visible" :es-edicion="modalForm.esEdicion" :medico-data="formData"
-      :areas="areas" @close="cerrarModalForm" @save="guardarMedico" />
+      @close="cerrarModalForm" @save="guardarMedico" />
 
     <!-- Modal de Detalle -->
     <ModalDetalleMedico :visible="modalDetalle.visible" :medico="modalDetalle.medico" @close="cerrarModalDetalle"
@@ -434,18 +434,14 @@ const guardarMedico = async (data: any) => {
   try {
     if (modalForm.value.esEdicion) {
       await medicoService.updateMedico(data.id, {
-        name: data.nombre,
-        username: data.username,
+        ...data,
         role: 'profesional',
         password: data.password || undefined
       });
     } else {
       await medicoService.createMedico({
-        name: data.nombre,
-        username: data.username,
-        password: data.password,
-        role: 'profesional',
-        dni: data.dni || data.cmp
+        ...data,
+        role: 'profesional'
       });
     }
 

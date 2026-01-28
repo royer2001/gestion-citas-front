@@ -5,13 +5,17 @@ export interface Medico {
     id: number;
     nombre: string;
     name: string; // Alias for compatibility
+    nombres?: string;
+    apellido_paterno?: string;
+    apellido_materno?: string;
     iniciales: string;
     email: string;
     telefono: string;
-    cmp: string;
+    cmp?: string;
     dni: string;
     area: string;
-    especialidad: string;
+    especialidad?: string;
+    especialidades?: any[];
     horario: string;
     cuposDia: number;
     direccion?: string;
@@ -20,11 +24,18 @@ export interface Medico {
 }
 
 export interface CreateMedicoPayload {
-    name: string;
+    name?: string;
+    nombres: string;
+    apellido_paterno: string;
+    apellido_materno: string;
     username: string;
     password?: string;
     role: 'profesional';
-    dni?: string;
+    dni: string;
+    email?: string;
+    telefono?: string;
+    direccion?: string;
+    especialidades_ids?: number[];
 }
 
 export const medicoService = {
@@ -38,17 +49,20 @@ export const medicoService = {
             return {
                 id: m.id,
                 nombre: nombreCompleto,
-                name: nombreCompleto, // Alias for compatibility
+                name: nombreCompleto,
+                nombres: m.persona?.nombres || '',
+                apellido_paterno: m.persona?.apellido_paterno || '',
+                apellido_materno: m.persona?.apellido_materno || '',
                 iniciales: this.obtenerIniciales(nombreCompleto),
-                email: '',
-                telefono: '',
+                email: m.persona?.email || '',
+                telefono: m.persona?.telefono || '',
                 cmp: m.dni || '',
                 dni: m.dni,
                 area: m.area_id ? (m.area_nombre || '').toLowerCase().replace(' ', '_') : '', 
-                especialidad: m.especialidad || m.area_nombre || '',
+                especialidades: m.especialidades || [],
                 horario: '',
                 cuposDia: 0,
-                direccion: '',
+                direccion: m.persona?.direccion || '',
                 estado: m.activo ? 'activo' : 'inactivo',
                 username: m.username
             };
@@ -56,11 +70,7 @@ export const medicoService = {
     },
 
     async createMedico(data: CreateMedicoPayload) {
-        // Uses the user creation endpoint since doctors are users
-        const response = await api.post('/auth/users', {
-            ...data,
-            role: 'profesional'
-        });
+        const response = await api.post('/auth/users', data);
         return response.data;
     },
 
@@ -74,7 +84,8 @@ export const medicoService = {
     },
 
     obtenerIniciales(nombre: string): string {
-        const palabras = nombre.split(" ");
+        if (!nombre) return '??';
+        const palabras = nombre.trim().split(" ");
         return palabras
             .slice(0, 2)
             .map((p) => p[0])

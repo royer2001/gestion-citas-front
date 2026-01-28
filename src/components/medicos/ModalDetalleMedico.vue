@@ -118,9 +118,9 @@ interface Medico {
     iniciales: string
     email: string
     telefono: string
-    cmp: string
+    cmp?: string
     area: string
-    especialidad: string
+    especialidad?: string
     horario: string
     cuposDia: number
     direccion?: string
