@@ -12,6 +12,11 @@ const api = axios.create({
 
 // Incluir access token
 api.interceptors.request.use((config) => {
+  // No enviar Authorization header cuando se está refrescando el token
+  if (config.url?.includes('/auth/refresh')) {
+    return config;
+  }
+
   const token = localStorage.getItem('token')
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
