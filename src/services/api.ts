@@ -36,6 +36,15 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (err) {
         // Si falla el refresh, el usuario debe re-autenticarse
+        try {
+          // Importación dinámica para evitar dependencia circular
+          const { useAuthStore } = await import('../store/auth');
+          const auth = useAuthStore();
+          auth.setSession(null);
+        } catch (e) {
+          console.error("Error clearing session:", e);
+          localStorage.removeItem('user'); // Fallback
+        }
         router.push("/login");
       }
     }
